@@ -1,0 +1,66 @@
+{
+  "postStyle": {
+    "github": "Github",
+    "newspaper": "Newspaper",
+    "poster": "Poster",
+    "slim": "Slim",
+    "note": "Note",
+    "tw": "Thoughtworks"
+  },
+  "toolbar": {
+    "selectStyleText": "Select style"
+  },
+  "commonToast": {
+    "error": "oops, something went wrong!",
+    "processing": "Processing, please wait...",
+    "developing": "Feature is under development..."
+  },
+  "copyEmail": {
+    "buttonName": "Copy as email",
+    "buttonDescription": "Then you can paste it to email editor like Gmail.",
+    "successMessage": "Content copied",
+    "successDescription": "You can paste into your email",
+    "failedMessage": "Failed to copy content"
+  },
+  "copyImage": {
+    "buttonName": "Copy as image",
+    "buttonDescription": "Then you can paste it to anywhere.",
+    "successMessage": "Image copied to clipboard",
+    "successDescription": "You can now paste it anywhere",
+    "failedMessage": "Failed to copy image"
+  },
+  "downloadImage": {
+    "buttonName": "Download image",
+    "buttonDescription": "Download .png image file.",
+    "successMessage": "Image saved",
+    "successDescription": "Image has been successfully saved",
+    "failedMessage": "Failed to download image"
+  },
+  "downloadPDF": {
+    "buttonName": "Download PDF",
+    "buttonDescription": "Download .pdf file.",
+    "successMessage": "PDF saved",
+    "successDescription": "PDF has been successfully saved",
+    "failedMessage": "Failed to download PDF"
+  },
+  "downloadHTML": {
+    "buttonName": "Download HTML",
+    "buttonDescription": "Download .html file.",
+    "successMessage": "HTML saved",
+    "successDescription": "HTML has been successfully saved",
+    "failedMessage": "Failed to download HTML"
+  },
+  "downloadMarkdown": {
+    "buttonName": "Download Markdown",
+    "buttonDescription": "Download .md file.",
+    "successMessage": "Markdown saved",
+    "successDescription": "Markdown has been successfully saved",
+    "failedMessage": "Failed to download Markdown"
+  },
+  "customize": {
+    "containerBackground": "Container Background",
+    "buttonName": "Customize",
+    "layoutCustomizer": "Layout Customize",
+    "containerPadding": "Container Padding"
+  }
+}

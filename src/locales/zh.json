@@ -1,0 +1,66 @@
+{
+  "postStyle": {
+    "github": "默认",
+    "newspaper": "报纸",
+    "poster": "海报",
+    "slim": "细体",
+    "note": "笔记",
+    "tw": "Thoughtworks"
+  },
+  "toolbar": {
+    "selectStyleText": "选择样式"
+  },
+  "commonToast": {
+    "error": "发生了意想不到的错误！",
+    "processing": "处理中，请稍等...",
+    "developing": "功能正在开发中..."
+  },
+  "copyEmail": {
+    "buttonName": "复制邮件",
+    "buttonDescription": "复制邮件后你可以粘贴到邮件编辑器，如Gmail中。",
+    "successMessage": "内容已复制",
+    "successDescription": "你可以粘贴到你的邮件中",
+    "failedMessage": "复制失败"
+  },
+  "copyImage": {
+    "buttonName": "复制图片",
+    "buttonDescription": "复制图片后你可以粘贴到任何地方。",
+    "successMessage": "图片已复制到剪贴板",
+    "successDescription": "你现在可以粘贴到任何地方",
+    "failedMessage": "复制图片失败"
+  },
+  "downloadImage": {
+    "buttonName": "下载图片",
+    "buttonDescription": "下载为.png格式的图片文件。",
+    "successMessage": "图片已保存",
+    "successDescription": "图片已成功保存",
+    "failedMessage": "下载图片失败"
+  },
+  "downloadPDF": {
+    "buttonName": "下载PDF",
+    "buttonDescription": "下载为.pdf格式的文件。",
+    "successMessage": "PDF已保存",
+    "successDescription": "PDF已成功保存",
+    "failedMessage": "下载PDF失败"
+  },
+  "downloadHTML": {
+    "buttonName": "下载HTML",
+    "buttonDescription": "下载为.html格式的文件。",
+    "successMessage": "HTML已保存",
+    "successDescription": "HTML已成功保存",
+    "failedMessage": "下载HTML失败"
+  },
+  "downloadMarkdown": {
+    "buttonName": "下载Markdown",
+    "buttonDescription": "下载为.md格式的文件。",
+    "successMessage": "Markdown已保存",
+    "successDescription": "Markdown已成功保存",
+    "failedMessage": "下载Markdown失败"
+  },
+  "customize": {
+    "containerBackground": "背景色",
+    "buttonName": "自定义",
+    "layoutCustomizer": "布局调整",
+    "containerPadding": "边距调整"
+  }
+}
