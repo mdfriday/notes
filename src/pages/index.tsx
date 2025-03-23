@@ -15,6 +15,10 @@ import welcomeMarkdownZh from "@/data/welcome-zh.md?raw";
 import welcomeMarkdownEn from "@/data/welcome-en.md?raw";
 import Toolbar from "@/components/toolbar/toolbar.tsx";
 import { ToolbarState } from "@/state/toolbarState";
+import { Shortcode } from "@mdfriday/shortcode";
+
+// Create a Shortcode instance
+const shortcode = new Shortcode();
 
 // Move marked configuration to a separate constant
 const markedInstance = new Marked(
@@ -56,13 +60,14 @@ export default function IndexPage() {
   }, [i18n.language]);
 
   useEffect(() => {
-    console.log("--", template);
+    setMarkdown(template)
   }, [template]);
 
   // Parse markdown to HTML and apply inline styles
   useEffect(() => {
     const parseMarkdown = async () => {
-      const parsedHTML = await markedInstance.parse(markdown);
+      const scResult = shortcode.render(markdown);
+      const parsedHTML = await markedInstance.parse(scResult);
       const wrappedHTML = wrapWithContainer(replaceImgSrc(parsedHTML));
 
       setInlineStyledHTML(inlineStyles(wrappedHTML, articleStyle));
