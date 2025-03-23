@@ -1,7 +1,7 @@
 {{< cardBanner
 
 logo="不黑学长"
-avatar="https://sunwei.xyz/posts/images/kuangxi.jpeg"
+avatar="https://notes.sunwei.xyz/avatar.png"
 mainTitle="让完播率>50% (3/3)"
 subtitle="6种文案公式"
 description="爆款拆解/爆款要素/文案结构"
