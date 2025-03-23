@@ -1,8 +1,8 @@
-# MarkdownPost
+# MDFriday Notes
 
-👋 Welcome to **MarkdownPost**! Nice to meet you!
+👋 Welcome to **MDFriday Notes**! Nice to meet you!
 
-Just focus on creating your content, **MarkdownPost** will convert it to `email`, `image`, `PDF` and more.
+Just focus on creating your content, **MDFriday Notes** will convert it to `email`, `image`, `PDF` and more.
 
 ## Quick Start
 
@@ -15,7 +15,7 @@ Just focus on creating your content, **MarkdownPost** will convert it to `email`
 
 ## Use Cases
 
-**MarkdownPost**'s various output formats (currently under development) can meet different use cases:
+**MDFriday Notes**'s various output formats (currently under development) can meet different use cases:
 
 | Format    | Description                                              | Scenario                          |
 |-----------|----------------------------------------------------------|-----------------------------------|
@@ -34,7 +34,11 @@ Just focus on creating your content, **MarkdownPost** will convert it to `email`
 - 🔒 **Data Security:** Text and images are processed entirely in the browser, not uploaded to servers.
 - 🌟 **Free & Open Source:** Completely free to use, community contributions welcome.
 
-## Feedback
+## Support
 
-Feel free to share your ideas and suggestions on [Github Issue](https://github.com/Cyronlee/markdown-post/issues). Your
-feedback will make **MarkdownPost** better!
+Don't know how to use it? Have questions during use? Want to learn more?
+
+Join us!
+
+**WeChat:** mdfriday
+**QQ:** 578973027
