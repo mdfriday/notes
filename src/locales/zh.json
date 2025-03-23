@@ -5,10 +5,18 @@
     "poster": "海报",
     "slim": "细体",
     "note": "笔记",
-    "tw": "Thoughtworks"
+    "tw": "商务"
+  },
+  "templateName": {
+    "empty": "-",
+    "cardBanner": "卡片横幅",
+    "formulaSingle": "公式单行",
+    "formulaPair": "公式双行",
+    "formulaFlow": "公式流式"
   },
   "toolbar": {
-    "selectStyleText": "选择样式"
+    "selectStyleText": "选择样式",
+    "selectTemplateText": "选择模板"
   },
   "commonToast": {
     "error": "发生了意想不到的错误！",

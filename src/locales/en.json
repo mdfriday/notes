@@ -5,10 +5,18 @@
     "poster": "Poster",
     "slim": "Slim",
     "note": "Note",
-    "tw": "Thoughtworks"
+    "tw": "Business"
+  },
+  "templateName": {
+    "empty": "-",
+    "cardBanner": "CardBanner",
+    "formulaSingle": "FormulaSingle",
+    "formulaPair": "FormulaPair",
+    "formulaFlow": "FormulaFlow"
   },
   "toolbar": {
-    "selectStyleText": "Select style"
+    "selectStyleText": "Select style",
+    "selectTemplateText": "Select Template"
   },
   "commonToast": {
     "error": "oops, something went wrong!",

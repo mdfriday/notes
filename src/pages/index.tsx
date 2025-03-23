@@ -44,7 +44,7 @@ const wrapWithContainer = (htmlString: string) => {
 
 export default function IndexPage() {
   const { i18n } = useTranslation();
-  const { articleStyle } = ToolbarState.useContainer();
+  const { articleStyle, template } = ToolbarState.useContainer();
 
   const [markdown, setMarkdown] = useState(welcomeMarkdownZh);
   const [isModified, setIsModified] = useState(false);
@@ -54,6 +54,10 @@ export default function IndexPage() {
   useEffect(() => {
     setMarkdown(i18n.language === "zh" ? welcomeMarkdownZh : welcomeMarkdownEn);
   }, [i18n.language]);
+
+  useEffect(() => {
+    console.log("--", template);
+  }, [template]);
 
   // Parse markdown to HTML and apply inline styles
   useEffect(() => {
