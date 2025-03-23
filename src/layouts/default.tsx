@@ -17,11 +17,11 @@ export default function DefaultLayout({
         <Link
           isExternal
           className="flex items-center gap-1 text-current"
-          href="https://github.com/Cyronlee"
-          title="Cyron's Github"
+          href="https://mdfriday.com"
+          title="MDFriday"
         >
           <span className="text-default-600">Made by</span>
-          <p className="text-primary">Cyron</p>
+          <p className="text-primary">MDFriday</p>
         </Link>
       </footer>
     </div>
