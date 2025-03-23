@@ -60,14 +60,23 @@ export default function IndexPage() {
   }, [i18n.language]);
 
   useEffect(() => {
-    setMarkdown(template)
+    if (template !== "") {
+      setMarkdown(template)
+    } else {
+      setMarkdown(i18n.language === "zh" ? welcomeMarkdownZh : welcomeMarkdownEn);
+    }
   }, [template]);
 
   // Parse markdown to HTML and apply inline styles
   useEffect(() => {
     const parseMarkdown = async () => {
-      const scResult = shortcode.render(markdown);
-      const parsedHTML = await markedInstance.parse(scResult);
+      let parsedHTML: string | Promise<string> = "";
+      if (template != "") {
+        parsedHTML = shortcode.render(markdown);
+      } else {
+        parsedHTML = await markedInstance.parse(markdown);
+      }
+
       const wrappedHTML = wrapWithContainer(replaceImgSrc(parsedHTML));
 
       setInlineStyledHTML(inlineStyles(wrappedHTML, articleStyle));
