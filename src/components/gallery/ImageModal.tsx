@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, memo, useState } from 'react';
 import type { ImageItem } from '@/types/gallery';
 
 interface ImageModalProps {
@@ -8,6 +8,8 @@ interface ImageModalProps {
 }
 
 const ImageModal = ({ image, isOpen, onClose }: ImageModalProps) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
   // Close on escape key press
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
@@ -28,36 +30,79 @@ const ImageModal = ({ image, isOpen, onClose }: ImageModalProps) => {
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
+      // Store current scroll position
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.top = `-${scrollY}px`;
       document.body.style.overflow = 'hidden';
     } else {
+      // Restore scroll position when modal closes
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
       document.body.style.overflow = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0', 10) * -1);
+      }
+      
+      // Reset image loaded state when modal closes
+      setImageLoaded(false);
     }
 
     return () => {
+      // Clean up in case component unmounts while modal is open
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  // Handle image load event
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
 
   if (!isOpen || !image) {
     return null;
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 will-change-transform">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/80 backdrop-blur-sm" 
         onClick={onClose}
+        style={{ 
+          willChange: 'opacity',
+          transform: 'translateZ(0)'
+        }}
       />
       
       {/* Modal content */}
       <div className="relative z-10 max-w-7xl w-full max-h-[90vh] flex flex-col bg-white rounded-xl overflow-hidden shadow-2xl">
+        {/* Loading indicator */}
+        {!imageLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-800"></div>
+          </div>
+        )}
+        
         {/* Image container */}
         <div className="relative flex-grow overflow-hidden">
           <img
             src={image.url}
             alt={image.title}
-            className="w-full h-full object-contain"
+            className={`w-full h-full object-contain transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            loading="eager"
+            decoding="async"
+            onLoad={handleImageLoad}
+            style={{ 
+              willChange: 'transform',
+              transform: 'translateZ(0)'
+            }}
           />
         </div>
         
@@ -99,4 +144,4 @@ const ImageModal = ({ image, isOpen, onClose }: ImageModalProps) => {
   );
 };
 
-export default ImageModal; 
+export default memo(ImageModal); 

@@ -1,141 +1,149 @@
 import type { ImageItem } from '../types/gallery';
 
+// Function to generate random dimensions for Picsum images
+const generateRandomDimensions = (): { width: number; height: number } => {
+  // Generate random dimensions between 300-1000 for width and height
+  const width = Math.floor(Math.random() * 700) + 300;
+  const height = Math.floor(Math.random() * 700) + 300;
+  return { width, height };
+};
+
 // Sample image data - in a real app, this would come from an API
 export const getImages = (): ImageItem[] => {
   return [
     {
       id: '1',
-      url: 'https://images.unsplash.com/photo-1682685797366-715d29e33f9d',
+      url: 'https://picsum.photos/600/400',
       title: 'Mountain Landscape',
       description: 'Beautiful mountain landscape with snow-capped peaks',
-      width: 1200,
-      height: 1600,
+      width: 600,
+      height: 400,
       tags: ['nature', 'mountains', 'landscape', 'snow'],
     },
     {
       id: '2',
-      url: 'https://images.unsplash.com/photo-1682687981674-0927add86f2b',
+      url: 'https://picsum.photos/700/450',
       title: 'Coastal Sunset',
       description: 'Breathtaking sunset over the ocean with vibrant colors',
-      width: 1600,
-      height: 900,
+      width: 700,
+      height: 450,
       tags: ['nature', 'sunset', 'ocean', 'coast'],
     },
     {
       id: '3',
-      url: 'https://images.unsplash.com/photo-1682686581484-a2d3005abfcc',
+      url: 'https://picsum.photos/500/800',
       title: 'Urban Architecture',
       description: 'Modern architectural design in a bustling city center',
-      width: 800,
-      height: 1200,
+      width: 500,
+      height: 800,
       tags: ['urban', 'architecture', 'city', 'modern'],
     },
     {
       id: '4',
-      url: 'https://images.unsplash.com/photo-1682687221248-3116ba6ab483',
+      url: 'https://picsum.photos/800/500',
       title: 'Desert Landscape',
       description: 'Vast desert landscape with rolling sand dunes',
-      width: 1920,
-      height: 1080,
+      width: 800,
+      height: 500,
       tags: ['nature', 'desert', 'landscape', 'sand'],
     },
     {
       id: '5',
-      url: 'https://images.unsplash.com/photo-1683009427041-d810728a7cb6',
+      url: 'https://picsum.photos/600/600',
       title: 'Tropical Beach',
       description: 'Pristine tropical beach with palm trees and clear water',
-      width: 1500,
-      height: 1000,
+      width: 600,
+      height: 600,
       tags: ['nature', 'beach', 'tropical', 'ocean'],
     },
     {
       id: '6',
-      url: 'https://images.unsplash.com/photo-1682687981630-cefe9cd73072',
+      url: 'https://picsum.photos/400/700',
       title: 'Forest Path',
       description: 'Serene forest path with sunlight filtering through the trees',
-      width: 1000,
-      height: 1500,
+      width: 400,
+      height: 700,
       tags: ['nature', 'forest', 'path', 'sunlight'],
     },
     {
       id: '7',
-      url: 'https://images.unsplash.com/photo-1682688759157-57988e10ffa8',
+      url: 'https://picsum.photos/900/600',
       title: 'Wildlife Photography',
       description: 'Close-up shot of a wild animal in its natural habitat',
-      width: 1800,
-      height: 1200,
+      width: 900,
+      height: 600,
       tags: ['nature', 'wildlife', 'animal', 'photography'],
     },
     {
       id: '8',
-      url: 'https://images.unsplash.com/photo-1675088756705-08e78d7233e4',
+      url: 'https://picsum.photos/750/450',
       title: 'Mountainside Village',
       description: 'Charming village nestled on a mountainside with traditional architecture',
-      width: 1200,
-      height: 800,
+      width: 750,
+      height: 450,
       tags: ['architecture', 'village', 'mountains', 'traditional'],
     },
     {
       id: '9',
-      url: 'https://images.unsplash.com/photo-1682685797828-d3b2561deef4',
+      url: 'https://picsum.photos/650/850',
       title: 'Aerial Cityscape',
       description: 'Stunning aerial view of a major metropolitan area at night',
-      width: 2000,
-      height: 1333,
+      width: 650,
+      height: 850,
       tags: ['urban', 'city', 'aerial', 'night'],
     },
     {
       id: '10',
-      url: 'https://images.unsplash.com/photo-1678378385407-7566cea13168',
+      url: 'https://picsum.photos/550/550',
       title: 'Abstract Art',
       description: 'Colorful abstract art with geometric patterns and vibrant colors',
-      width: 1100,
-      height: 1650,
+      width: 550,
+      height: 550,
       tags: ['art', 'abstract', 'colorful', 'pattern'],
     },
     {
       id: '11',
-      url: 'https://images.unsplash.com/photo-1682687982185-531d09ec56fc',
+      url: 'https://picsum.photos/500/750',
       title: 'Waterfall',
       description: 'Majestic waterfall cascading down rocky cliffs',
-      width: 1300,
-      height: 2000,
+      width: 500,
+      height: 750,
       tags: ['nature', 'waterfall', 'water', 'rocks'],
     },
     {
       id: '12',
-      url: 'https://images.unsplash.com/photo-1682687218147-9806132dc697',
+      url: 'https://picsum.photos/850/550',
       title: 'Historic Architecture',
       description: 'Ancient architectural marvel showcasing historical craftsmanship',
-      width: 2200,
-      height: 1400,
+      width: 850,
+      height: 550,
       tags: ['architecture', 'historic', 'ancient', 'building'],
     },
     {
       id: '13',
-      url: 'https://images.unsplash.com/photo-1682686581030-7fa4ea2b96c3',
+      url: 'https://picsum.photos/700/500',
       title: 'Autumn Scenery',
       description: 'Vibrant autumn scenery with trees displaying colorful foliage',
-      width: 1600,
-      height: 900,
+      width: 700,
+      height: 500,
       tags: ['nature', 'autumn', 'trees', 'foliage'],
     },
     {
       id: '14',
-      url: 'https://images.unsplash.com/photo-1682687220989-ba05b6eebd39',
+      url: 'https://picsum.photos/800/450',
       title: 'Cityscape at Night',
       description: 'Mesmerizing cityscape with illuminated buildings at night',
-      width: 1800,
-      height: 1000,
+      width: 800,
+      height: 450,
       tags: ['urban', 'city', 'night', 'lights'],
     },
     {
       id: '15',
-      url: 'https://images.unsplash.com/photo-1674463713009-863e61ee36e3',
+      url: 'https://picsum.photos/600/800',
       title: 'Mountain Lake',
       description: 'Crystal clear mountain lake reflecting surrounding peaks',
-      width: 1400,
-      height: 1800,
+      width: 600,
+      height: 800,
       tags: ['nature', 'mountains', 'lake', 'water'],
     },
   ];
@@ -187,28 +195,27 @@ export const fetchImages = async (
   searchTerm = '',
   selectedTags: string[] = []
 ): Promise<{ images: ImageItem[]; hasMore: boolean }> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      let images: ImageItem[];
+  // Prepare the data
+  let images: ImageItem[];
 
-      if (searchTerm || selectedTags.length > 0) {
-        // If we have search or filters, apply them
-        images = filterImages(searchTerm, selectedTags);
-        // Then paginate the filtered results
-        const startIndex = (page - 1) * limit;
-        const paginatedImages = images.slice(startIndex, startIndex + limit);
-        resolve({
-          images: paginatedImages,
-          hasMore: startIndex + limit < images.length
-        });
-      } else {
-        // Otherwise just paginate all images
-        images = getPaginatedImages(page, limit);
-        resolve({
-          images,
-          hasMore: page * limit < getImages().length
-        });
-      }
-    }, 800);
-  });
+  if (searchTerm || selectedTags.length > 0) {
+    // If we have search or filters, apply them
+    images = filterImages(searchTerm, selectedTags);
+    // Then paginate the filtered results
+    const startIndex = (page - 1) * limit;
+    const paginatedImages = images.slice(startIndex, startIndex + limit);
+    
+    return {
+      images: paginatedImages,
+      hasMore: startIndex + limit < images.length
+    };
+  } else {
+    // Otherwise just paginate all images
+    images = getPaginatedImages(page, limit);
+    
+    return {
+      images,
+      hasMore: page * limit < getImages().length
+    };
+  }
 }; 
