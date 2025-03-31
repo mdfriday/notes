@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MDFriday Notes</title>
+    <title><%- title %></title>
     <meta key="title" content="MarkdownPost" property="og:title" />
     <meta
-      content="Generate beautiful emails and images from Markdown"
+      content="<%- description %>"
       property="og:description"
     />
     <meta
-      content="Generate beautiful emails and images from Markdown"
+      content="<%- description %>"
       name="description"
     />
     <meta
@@ -26,6 +26,7 @@
       integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn"
       crossorigin="anonymous"
     />
+    <!-- Vite将自动注入预加载标签 -->
   </head>
   <body>
     <div id="root"></div>

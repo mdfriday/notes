@@ -7,6 +7,7 @@ import DocsPage from "@/pages/docs";
 import PricingPage from "@/pages/pricing";
 import BlogPage from "@/pages/blog";
 import AboutPage from "@/pages/about";
+import PhotosPage from "@/pages/photos";
 
 function LanguageSwitcher() {
   const location = useLocation();
@@ -44,6 +45,7 @@ function App() {
         <Route element={<PricingPage />} path="/:lang/pricing" />
         <Route element={<BlogPage />} path="/:lang/blog" />
         <Route element={<AboutPage />} path="/:lang/about" />
+        <Route element={<PhotosPage />} path="/:lang/photos" />
       </Routes>
     </>
   );
