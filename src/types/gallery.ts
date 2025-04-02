@@ -6,4 +6,5 @@ export interface ImageItem {
   width: number;
   height: number;
   tags: string[];
+  asset?: string; // Original image asset path from API
 } 

@@ -1,5 +1,6 @@
 import { useEffect, memo, useState } from 'react';
 import type { ImageItem } from '@/types/gallery';
+import { getFullAssetUrl } from '@/utils/imageUtils';
 
 interface ImageModalProps {
   image: ImageItem | null;
@@ -10,65 +11,56 @@ interface ImageModalProps {
 const ImageModal = ({ image, isOpen, onClose }: ImageModalProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   
-  // Close on escape key press
+  // Reset loaded state when image changes
   useEffect(() => {
-    const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+    setImageLoaded(false);
+  }, [image]);
+  
+  // Handle keyboard events for accessibility
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isOpen) return;
+      
+      // Close on escape key
+      if (e.key === 'Escape') {
         onClose();
       }
     };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscKey);
-    }
-
+    
+    window.addEventListener('keydown', handleKeyDown);
+    
     return () => {
-      document.removeEventListener('keydown', handleEscKey);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
-
-  // Prevent body scroll when modal is open
+  
+  // Handle background scroll lock
   useEffect(() => {
     if (isOpen) {
-      // Store current scroll position
-      const scrollY = window.scrollY;
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.top = `-${scrollY}px`;
       document.body.style.overflow = 'hidden';
     } else {
-      // Restore scroll position when modal closes
-      const scrollY = document.body.style.top;
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.top = '';
       document.body.style.overflow = '';
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0', 10) * -1);
-      }
-      
-      // Reset image loaded state when modal closes
-      setImageLoaded(false);
     }
-
+    
     return () => {
-      // Clean up in case component unmounts while modal is open
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.top = '';
       document.body.style.overflow = '';
     };
   }, [isOpen]);
-
-  // Handle image load event
+  
+  // Don't render anything if no image or not open
+  if (!image || !isOpen) {
+    return null;
+  }
+  
+  // Get the full-size original image URL
+  const originalImageUrl = image.asset 
+    ? getFullAssetUrl(image.asset) 
+    : image.url; // Fallback to url if asset is not available
+  
   const handleImageLoad = () => {
     setImageLoaded(true);
   };
-
-  if (!isOpen || !image) {
-    return null;
-  }
-
+  
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 will-change-transform">
       {/* Backdrop */}
@@ -93,7 +85,7 @@ const ImageModal = ({ image, isOpen, onClose }: ImageModalProps) => {
         {/* Image container */}
         <div className="relative flex-grow overflow-hidden">
           <img
-            src={image.url}
+            src={originalImageUrl}
             alt={image.title}
             className={`w-full h-full object-contain transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             loading="eager"
@@ -107,38 +99,56 @@ const ImageModal = ({ image, isOpen, onClose }: ImageModalProps) => {
         </div>
         
         {/* Details panel */}
-        <div className="p-4 bg-white">
-          <h2 className="text-xl font-bold text-gray-900">{image.title}</h2>
-          
-          {image.description && (
-            <p className="mt-2 text-gray-600">{image.description}</p>
-          )}
-          
-          {image.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {image.tags.map((tag) => (
-                <span 
-                  key={tag} 
-                  className="px-3 py-1 bg-gray-100 text-gray-800 text-sm rounded-full"
-                >
-                  {tag}
-                </span>
-              ))}
+        <div className="p-4 bg-white border-t border-gray-200">
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">{image.title}</h2>
+              {image.description && (
+                <p className="mt-1 text-gray-600">{image.description}</p>
+              )}
+              
+              {/* Display tags */}
+              {image.tags && image.tags.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {image.tags.map(tag => (
+                    <span 
+                      key={tag}
+                      className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+            
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full text-gray-500 hover:text-gray-700 transition-colors"
+              aria-label="Close"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className="h-6 w-6" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M6 18L18 6M6 6l12 12" 
+                />
+              </svg>
+            </button>
+          </div>
+          
+          {/* Image dimensions */}
+          <div className="mt-2 text-sm text-gray-500">
+            {image.width} × {image.height}
+          </div>
         </div>
-        
-        {/* Close button */}
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-          aria-label="Close modal"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
       </div>
     </div>
   );

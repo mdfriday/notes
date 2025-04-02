@@ -1,4 +1,9 @@
 import type { ImageItem } from '../types/gallery';
+import { imageApiService } from './imageApiService';
+import { API_FEATURES } from '../config/api';
+
+// Flag to determine whether to use mock data or real API
+const USE_MOCK_DATA = !API_FEATURES.USE_REAL_API;
 
 // Function to generate random dimensions for Picsum images
 const generateRandomDimensions = (): { width: number; height: number } => {
@@ -8,8 +13,8 @@ const generateRandomDimensions = (): { width: number; height: number } => {
   return { width, height };
 };
 
-// Sample image data - in a real app, this would come from an API
-export const getImages = (): ImageItem[] => {
+// Sample image data - used for mock mode
+export const getMockImages = (): ImageItem[] => {
   return [
     {
       id: '1',
@@ -19,6 +24,7 @@ export const getImages = (): ImageItem[] => {
       width: 600,
       height: 400,
       tags: ['nature', 'mountains', 'landscape', 'snow'],
+      asset: 'https://picsum.photos/600/400',
     },
     {
       id: '2',
@@ -28,6 +34,7 @@ export const getImages = (): ImageItem[] => {
       width: 700,
       height: 450,
       tags: ['nature', 'sunset', 'ocean', 'coast'],
+      asset: 'https://picsum.photos/700/450',
     },
     {
       id: '3',
@@ -37,6 +44,7 @@ export const getImages = (): ImageItem[] => {
       width: 500,
       height: 800,
       tags: ['urban', 'architecture', 'city', 'modern'],
+      asset: 'https://picsum.photos/500/800',
     },
     {
       id: '4',
@@ -46,6 +54,7 @@ export const getImages = (): ImageItem[] => {
       width: 800,
       height: 500,
       tags: ['nature', 'desert', 'landscape', 'sand'],
+      asset: 'https://picsum.photos/800/500',
     },
     {
       id: '5',
@@ -55,6 +64,7 @@ export const getImages = (): ImageItem[] => {
       width: 600,
       height: 600,
       tags: ['nature', 'beach', 'tropical', 'ocean'],
+      asset: 'https://picsum.photos/600/600',
     },
     {
       id: '6',
@@ -64,6 +74,7 @@ export const getImages = (): ImageItem[] => {
       width: 400,
       height: 700,
       tags: ['nature', 'forest', 'path', 'sunlight'],
+      asset: 'https://picsum.photos/400/700',
     },
     {
       id: '7',
@@ -73,6 +84,7 @@ export const getImages = (): ImageItem[] => {
       width: 900,
       height: 600,
       tags: ['nature', 'wildlife', 'animal', 'photography'],
+      asset: 'https://picsum.photos/900/600',
     },
     {
       id: '8',
@@ -82,6 +94,7 @@ export const getImages = (): ImageItem[] => {
       width: 750,
       height: 450,
       tags: ['architecture', 'village', 'mountains', 'traditional'],
+      asset: 'https://picsum.photos/750/450',
     },
     {
       id: '9',
@@ -91,6 +104,7 @@ export const getImages = (): ImageItem[] => {
       width: 650,
       height: 850,
       tags: ['urban', 'city', 'aerial', 'night'],
+      asset: 'https://picsum.photos/650/850',
     },
     {
       id: '10',
@@ -100,6 +114,7 @@ export const getImages = (): ImageItem[] => {
       width: 550,
       height: 550,
       tags: ['art', 'abstract', 'colorful', 'pattern'],
+      asset: 'https://picsum.photos/550/550',
     },
     {
       id: '11',
@@ -109,6 +124,7 @@ export const getImages = (): ImageItem[] => {
       width: 500,
       height: 750,
       tags: ['nature', 'waterfall', 'water', 'rocks'],
+      asset: 'https://picsum.photos/500/750',
     },
     {
       id: '12',
@@ -118,6 +134,7 @@ export const getImages = (): ImageItem[] => {
       width: 850,
       height: 550,
       tags: ['architecture', 'historic', 'ancient', 'building'],
+      asset: 'https://picsum.photos/850/550',
     },
     {
       id: '13',
@@ -127,6 +144,7 @@ export const getImages = (): ImageItem[] => {
       width: 700,
       height: 500,
       tags: ['nature', 'autumn', 'trees', 'foliage'],
+      asset: 'https://picsum.photos/700/500',
     },
     {
       id: '14',
@@ -136,6 +154,7 @@ export const getImages = (): ImageItem[] => {
       width: 800,
       height: 450,
       tags: ['urban', 'city', 'night', 'lights'],
+      asset: 'https://picsum.photos/800/450',
     },
     {
       id: '15',
@@ -145,20 +164,21 @@ export const getImages = (): ImageItem[] => {
       width: 600,
       height: 800,
       tags: ['nature', 'mountains', 'lake', 'water'],
+      asset: 'https://picsum.photos/600/800',
     },
   ];
 };
 
-// Function to paginate images
+// Function to paginate images - for mock mode
 export const getPaginatedImages = (page: number, limit: number): ImageItem[] => {
-  const allImages = getImages();
+  const allImages = getMockImages();
   const startIndex = (page - 1) * limit;
   return allImages.slice(startIndex, startIndex + limit);
 };
 
-// Get all unique tags
-export const getAllTags = (): string[] => {
-  const allImages = getImages();
+// Get all unique tags - for mock mode
+export const getAllTagsMock = (): string[] => {
+  const allImages = getMockImages();
   const tagsSet = new Set<string>();
 
   for (const image of allImages) {
@@ -170,9 +190,9 @@ export const getAllTags = (): string[] => {
   return Array.from(tagsSet).sort();
 };
 
-// Filter images by search term and/or tags
-export const filterImages = (searchTerm: string, selectedTags: string[] = []): ImageItem[] => {
-  const allImages = getImages();
+// Filter images by search term and/or tags - for mock mode
+export const filterImagesMock = (searchTerm: string, selectedTags: string[] = []): ImageItem[] => {
+  const allImages = getMockImages();
 
   return allImages.filter(image => {
     // Filter by search term (case insensitive)
@@ -188,34 +208,48 @@ export const filterImages = (searchTerm: string, selectedTags: string[] = []): I
   });
 };
 
-// Simulate fetching images with a delay
+// Get all tags - unifies API and mock implementation
+export const getAllTags = async (): Promise<string[]> => {
+  if (USE_MOCK_DATA) {
+    return getAllTagsMock();
+  }
+  
+  return await imageApiService.fetchAllTags();
+};
+
+// Fetch images with unified API
 export const fetchImages = async (
   page = 1,
   limit = 15,
   searchTerm = '',
   selectedTags: string[] = []
 ): Promise<{ images: ImageItem[]; hasMore: boolean }> => {
-  // Prepare the data
-  let images: ImageItem[];
+  if (USE_MOCK_DATA) {
+    // Prepare the mock data
+    let images: ImageItem[];
 
-  if (searchTerm || selectedTags.length > 0) {
-    // If we have search or filters, apply them
-    images = filterImages(searchTerm, selectedTags);
-    // Then paginate the filtered results
-    const startIndex = (page - 1) * limit;
-    const paginatedImages = images.slice(startIndex, startIndex + limit);
-    
-    return {
-      images: paginatedImages,
-      hasMore: startIndex + limit < images.length
-    };
-  } else {
-    // Otherwise just paginate all images
-    images = getPaginatedImages(page, limit);
-    
-    return {
-      images,
-      hasMore: page * limit < getImages().length
-    };
+    if (searchTerm || selectedTags.length > 0) {
+      // If we have search or filters, apply them
+      images = filterImagesMock(searchTerm, selectedTags);
+      // Then paginate the filtered results
+      const startIndex = (page - 1) * limit;
+      const paginatedImages = images.slice(startIndex, startIndex + limit);
+      
+      return {
+        images: paginatedImages,
+        hasMore: startIndex + limit < images.length
+      };
+    } else {
+      // Otherwise just paginate all images
+      images = getPaginatedImages(page, limit);
+      
+      return {
+        images,
+        hasMore: page * limit < getMockImages().length
+      };
+    }
   }
+  
+  // Use the real API service
+  return await imageApiService.fetchImages(page, limit, searchTerm, selectedTags);
 }; 

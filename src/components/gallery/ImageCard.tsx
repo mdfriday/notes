@@ -1,5 +1,6 @@
 import type { ImageItem } from '@/types/gallery';
 import { memo, useState, useEffect, useRef } from 'react';
+import { getGalleryThumbnailUrl } from '@/utils/imageUtils';
 
 interface ImageCardProps {
   image: ImageItem;
@@ -8,14 +9,16 @@ interface ImageCardProps {
 }
 
 const ImageCard = ({ image, onClick, prefetched = false }: ImageCardProps) => {
-  const { url, title, description, tags } = image;
+  const { title, description, tags, width, height } = image;
+  // Use thumbnail URL for better performance
+  const thumbnailUrl = getGalleryThumbnailUrl(width, height);
   const [isLoaded, setIsLoaded] = useState(prefetched); // If prefetched, consider it loaded
   const [isVisible, setIsVisible] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   
   // Calculate aspect ratio for responsive sizing
-  const aspectRatio = (image.height / image.width) * 100;
+  const aspectRatio = (height / width) * 100;
   
   // Handle click with a small performance optimization
   const handleClick = () => {
@@ -45,16 +48,16 @@ const ImageCard = ({ image, onClick, prefetched = false }: ImageCardProps) => {
       img.crossOrigin = "anonymous";
       img.onload = handleImageLoad;
       img.onerror = () => {
-        console.error(`Failed to load image: ${url}`);
+        console.error(`Failed to load image: ${thumbnailUrl}`);
       };
-      img.src = url;
+      img.src = thumbnailUrl;
       
       return () => {
         img.onload = null;
         img.onerror = null;
       };
     }
-  }, [url, isVisible, isLoaded, prefetched]);
+  }, [thumbnailUrl, isVisible, isLoaded, prefetched]);
   
   // Use Intersection Observer to track visibility more efficiently
   useEffect(() => {
@@ -103,7 +106,7 @@ const ImageCard = ({ image, onClick, prefetched = false }: ImageCardProps) => {
         )}
         <img
           ref={imageRef}
-          src={isVisible || prefetched ? url : ''}
+          src={isVisible || prefetched ? thumbnailUrl : ''}
           alt={title}
           className={`absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
           loading={prefetched ? 'eager' : 'lazy'}

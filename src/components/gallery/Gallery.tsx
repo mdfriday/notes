@@ -7,6 +7,7 @@ import MasonryGrid from './MasonryGrid';
 import SearchBar from './SearchBar';
 import TagFilter from './TagFilter';
 import { fetchImages, getAllTags } from '@/services/imageService';
+import { getGalleryThumbnailUrl } from '@/utils/imageUtils';
 
 // Global image cache to persist between renders
 const globalImageCache = new Map<string, HTMLImageElement>();
@@ -45,16 +46,18 @@ const Gallery = () => {
   const lastScrollPosition = useRef(0);
   
   // Optimized image prefetching with proper caching
-  const prefetchImage = useCallback((url: string) => {
+  const prefetchImage = useCallback((image: ImageItem) => {
+    const thumbnailUrl = getGalleryThumbnailUrl(image.width, image.height);
+    
     // Use the global cache to avoid recreating images
-    if (globalImageCache.has(url)) {
-      return globalImageCache.get(url);
+    if (globalImageCache.has(thumbnailUrl)) {
+      return globalImageCache.get(thumbnailUrl);
     }
     
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = url;
-    globalImageCache.set(url, img);
+    img.src = thumbnailUrl;
+    globalImageCache.set(thumbnailUrl, img);
     return img;
   }, []);
 
@@ -62,7 +65,7 @@ const Gallery = () => {
   const prefetchImages = useCallback((imageItems: ImageItem[], priority = false) => {
     // High priority images load immediately, others use requestIdleCallback
     const processBatch = (batch: ImageItem[]) => {
-      batch.forEach(image => prefetchImage(image.url));
+      batch.forEach(image => prefetchImage(image));
     };
     
     if (priority) {
@@ -100,8 +103,8 @@ const Gallery = () => {
         setLoading(true);
         setPage(1);
 
-        // Fetch tags
-        const tagsData = getAllTags();
+        // Fetch tags - Fix the issue by awaiting the Promise
+        const tagsData = await getAllTags();
         setAllTags(tagsData);
 
         // Fetch initial images
@@ -362,7 +365,7 @@ const Gallery = () => {
                 <ImageCard 
                   image={image} 
                   onClick={handleImageClick}
-                  prefetched={globalImageCache.has(image.url)}
+                  prefetched={globalImageCache.has(getGalleryThumbnailUrl(image.width, image.height))}
                 />
               </div>
             ))}
