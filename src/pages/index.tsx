@@ -13,9 +13,17 @@ import { TypewriterHero } from "@/components/typewriter-hero";
 import { MarkdownEditor } from "@/components/markdown-editor.tsx";
 import welcomeMarkdownZh from "@/data/welcome-zh.md?raw";
 import welcomeMarkdownEn from "@/data/welcome-en.md?raw";
-import Toolbar from "@/components/toolbar/toolbar.tsx";
 import { ToolbarState } from "@/state/toolbarState";
 import { Shortcode } from "@mdfriday/shortcode";
+import Sidebar from "@/components/sidebar/Sidebar";
+import ProjectExplorer, { Project, ProjectFile } from "@/components/project/ProjectExplorer";
+import {
+  getCurrentProject,
+  getFileById,
+  updateFileContent,
+  updateProject,
+  initializeProjects
+} from "@/services/projectService";
 
 // Create a Shortcode instance
 const shortcode = new Shortcode();
@@ -54,6 +62,82 @@ export default function IndexPage() {
   const [isModified, setIsModified] = useState(false);
   const [inlineStyledHTML, setInlineStyledHTML] = useState("");
   const [showRenderedHTML, setShowRenderedHTML] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isProjectExplorerCollapsed, setIsProjectExplorerCollapsed] = useState(false);
+  
+  // 项目和文件状态
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [selectedFileId, setSelectedFileId] = useState<string>("");
+  const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(null);
+
+  // 初始化项目
+  useEffect(() => {
+    const language = i18n.language as "zh" | "en";
+    const initialProject = initializeProjects(language);
+    
+    if (initialProject) {
+      setCurrentProject(initialProject);
+      
+      // 设置初始选中的文件（通常是 index.md）
+      if (initialProject.files.length > 0) {
+        // 默认选择第一个非目录文件
+        const firstFile = initialProject.files.find(file => !file.isDirectory);
+        if (firstFile) {
+          setSelectedFileId(firstFile.id);
+          setSelectedFile(firstFile);
+          setMarkdown(firstFile.content);
+        }
+      }
+    }
+    
+    // 监听项目变更事件
+    const handleProjectChange = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail?.projectId) {
+        const project = getCurrentProject();
+        if (project) {
+          setCurrentProject(project);
+          
+          // 设置默认文件
+          if (project.files.length > 0) {
+            const firstFile = project.files.find(file => !file.isDirectory);
+            if (firstFile) {
+              setSelectedFileId(firstFile.id);
+              setSelectedFile(firstFile);
+              setMarkdown(firstFile.content);
+            }
+          }
+        }
+      }
+    };
+    
+    window.addEventListener("project-changed", handleProjectChange);
+    
+    return () => {
+      window.removeEventListener("project-changed", handleProjectChange);
+    };
+  }, [i18n.language]);
+
+  // 文件选择处理
+  const handleFileSelect = (fileId: string) => {
+    if (!currentProject) return;
+    
+    const file = getFileById(currentProject.id, fileId);
+    if (file && !file.isDirectory) {
+      setSelectedFileId(fileId);
+      setSelectedFile(file);
+      setMarkdown(file.content);
+      setIsModified(false);
+    }
+  };
+
+  // 项目更新处理
+  const handleProjectUpdate = (updatedProject: Project) => {
+    if (updatedProject) {
+      updateProject(updatedProject);
+      setCurrentProject(updatedProject);
+    }
+  };
 
   useEffect(() => {
     setMarkdown(i18n.language === "zh" ? welcomeMarkdownZh : welcomeMarkdownEn);
@@ -88,6 +172,19 @@ export default function IndexPage() {
   const handleMarkdownChange = (newMarkdown: string) => {
     setMarkdown(newMarkdown);
     setIsModified(true);
+    
+    // 如果有选中的文件，同时更新文件内容
+    if (currentProject && selectedFile) {
+      updateFileContent(currentProject.id, selectedFile.id, newMarkdown);
+    }
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+  
+  const toggleProjectExplorer = () => {
+    setIsProjectExplorerCollapsed(!isProjectExplorerCollapsed);
   };
 
   useEffect(() => {
@@ -106,21 +203,36 @@ export default function IndexPage() {
   }, [isModified]);
 
   // UI Components
-  const LeftContent = (
-    <div className="p-4">
-      <MarkdownEditor value={markdown} onChange={handleMarkdownChange} />
+  const EditorWithExplorer = (
+    <div className="flex h-full w-full">
+      {/* 项目文件浏览器 */}
+      {currentProject && (
+        <ProjectExplorer
+          project={currentProject}
+          onFileSelect={handleFileSelect}
+          onProjectUpdate={handleProjectUpdate}
+          selectedFileId={selectedFileId}
+          isCollapsed={isProjectExplorerCollapsed}
+          onToggleCollapse={toggleProjectExplorer}
+          className="shrink-0"
+        />
+      )}
+      
+      {/* Markdown 编辑器 */}
+      <div className="flex-1 h-full min-w-0">
+        <MarkdownEditor value={markdown} onChange={handleMarkdownChange} />
+      </div>
     </div>
   );
 
   const RightContent = (
-    <div className="p-4">
+    <div className="h-full w-full p-3 overflow-auto">
       {showRenderedHTML ? (
-        <>
-          <div
-            dangerouslySetInnerHTML={{ __html: inlineStyledHTML }}
-            id="markdown-body"
-          />
-        </>
+        <div
+          dangerouslySetInnerHTML={{ __html: inlineStyledHTML }}
+          id="markdown-body"
+          className="h-full max-w-4xl mx-auto pb-4"
+        />
       ) : (
         inlineStyledHTML
       )}
@@ -128,16 +240,21 @@ export default function IndexPage() {
   );
 
   return (
-    <DefaultLayout>
-      <TypewriterHero />
-      <Toolbar markdown={markdown} />
-      <ResizableSplitPane
-        initialLeftWidth={40}
-        leftPane={LeftContent}
-        maxLeftWidth={70}
-        minLeftWidth={30}
-        rightPane={RightContent}
-      />
+    <DefaultLayout markdown={markdown}>
+      <div className="flex h-full">
+        <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
+        <div className={`transition-all duration-300 h-full w-full flex ${isSidebarOpen ? 'ml-64' : 'ml-14'}`}>
+          <div className="w-full h-full px-2 py-2">
+            <ResizableSplitPane
+              initialLeftWidth={45}
+              leftPane={EditorWithExplorer}
+              maxLeftWidth={70}
+              minLeftWidth={30}
+              rightPane={RightContent}
+            />
+          </div>
+        </div>
+      </div>
     </DefaultLayout>
   );
 }

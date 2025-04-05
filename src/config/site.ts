@@ -4,10 +4,10 @@ export const siteConfig = {
   name: "MarkdownPost",
   description: "Write Markdown And Post Everywhere.",
   navItems: [
-    // {
-    //   label: "Home",
-    //   href: "/",
-    // },
+    {
+      label: "Photos",
+      href: "/photos",
+    },
     // {
     //   label: "Docs",
     //   href: "/docs",

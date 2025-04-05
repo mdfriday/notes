@@ -1,0 +1,440 @@
+import { useState, useEffect } from "react";
+import { Button } from "@nextui-org/button";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
+import { Divider } from "@nextui-org/divider";
+import { Input } from "@nextui-org/input";
+import { Card, CardBody, CardFooter } from "@nextui-org/card";
+import Gallery from "@/components/gallery/Gallery";
+import { 
+  getAllProjects, 
+  createProject as createProjectService,
+  setCurrentProjectId
+} from "@/services/projectService";
+import { Project } from "@/components/project/ProjectExplorer";
+import { useTranslation } from "react-i18next";
+
+interface SidebarProps {
+  isOpen: boolean;
+  onToggle: () => void;
+  onProjectSelect?: (projectId: string) => void;
+}
+
+// 定义项目类型和模板接口
+interface Template {
+  id: string;
+  name: string;
+  description: string;
+  thumbnailUrl: string;
+  type: "xiaohongshu" | "resume" | "website";
+}
+
+export default function Sidebar({ isOpen, onToggle, onProjectSelect }: SidebarProps) {
+  const { i18n, t } = useTranslation();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [currentProjectId, setCurrentProjectIdState] = useState<string | null>(null);
+
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState<"xiaohongshu" | "resume" | "website">("xiaohongshu");
+
+  // 初始化加载项目
+  useEffect(() => {
+    const loadProjects = () => {
+      const allProjects = getAllProjects();
+      setProjects(allProjects);
+      
+      // 获取当前项目ID
+      const currentId = localStorage.getItem("md_friday_current_project_id");
+      setCurrentProjectIdState(currentId);
+    };
+    
+    loadProjects();
+    
+    // 监听本地存储变化
+    const handleStorageChange = () => {
+      loadProjects();
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
+  // 模板数据示例
+  const templates: Template[] = [
+    { 
+      id: "xiaohongshu-1", 
+      name: "旅行分享", 
+      description: "分享你的旅行见闻和精彩瞬间", 
+      thumbnailUrl: "https://via.placeholder.com/150?text=旅行分享", 
+      type: "xiaohongshu" 
+    },
+    { 
+      id: "xiaohongshu-2", 
+      name: "美食推荐", 
+      description: "分享美食攻略和餐厅推荐", 
+      thumbnailUrl: "https://via.placeholder.com/150?text=美食推荐", 
+      type: "xiaohongshu" 
+    },
+    { 
+      id: "resume-1", 
+      name: "简约风格", 
+      description: "简约专业的简历模板，突出个人技能", 
+      thumbnailUrl: "https://via.placeholder.com/150?text=简约风格", 
+      type: "resume" 
+    },
+    { 
+      id: "resume-2", 
+      name: "创意设计", 
+      description: "适合创意行业的简历，展示个人特色", 
+      thumbnailUrl: "https://via.placeholder.com/150?text=创意设计", 
+      type: "resume" 
+    },
+    { 
+      id: "website-1", 
+      name: "个人博客", 
+      description: "简洁的个人博客网站，展示文章和作品", 
+      thumbnailUrl: "https://via.placeholder.com/150?text=个人博客", 
+      type: "website" 
+    },
+    { 
+      id: "website-2", 
+      name: "作品集", 
+      description: "展示个人作品的专业网站模板", 
+      thumbnailUrl: "https://via.placeholder.com/150?text=作品集", 
+      type: "website" 
+    },
+  ];
+
+  // 根据搜索词和选中类型过滤模板
+  const filteredTemplates = templates.filter(template => 
+    template.type === selectedType && 
+    (searchTerm === "" || 
+     template.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+     template.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  const handleProjectClick = (id: string) => {
+    setCurrentProjectId(id);
+    setCurrentProjectIdState(id);
+    
+    if (onProjectSelect) {
+      onProjectSelect(id);
+    }
+    
+    // 触发一个自定义事件以通知其他组件
+    window.dispatchEvent(new CustomEvent("project-changed", { detail: { projectId: id } }));
+  };
+
+  const handleTemplateSelect = (templateId: string) => {
+    // 根据选中的模板创建项目
+    const language = i18n.language as "zh" | "en";
+    const newProject = createProjectService(selectedType, templateId, language);
+    
+    // 更新项目列表
+    setProjects(prev => [...prev, newProject]);
+    setCurrentProjectIdState(newProject.id);
+    
+    // 通知父组件
+    if (onProjectSelect) {
+      onProjectSelect(newProject.id);
+    }
+    
+    // 关闭模态框
+    setIsTemplateModalOpen(false);
+    
+    // 触发一个自定义事件以通知其他组件
+    window.dispatchEvent(new CustomEvent("project-changed", { detail: { projectId: newProject.id } }));
+  };
+
+  return (
+    <>
+      {/* Collapsible sidebar */}
+      <div
+        className={`fixed left-0 top-16 h-[calc(100vh-64px)] bg-white transition-all duration-300 z-10 border-r border-gray-200 shadow-sm flex flex-col ${
+          isOpen ? "w-64" : "w-14"
+        }`}
+      >
+        {/* Toggle button */}
+        <button
+          onClick={onToggle}
+          className="absolute -right-3 top-5 bg-white rounded-full p-1 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className={`w-4 h-4 transition-transform ${
+              isOpen ? "rotate-180" : "rotate-0"
+            }`}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 19.5L8.25 12l7.5-7.5"
+            />
+          </svg>
+        </button>
+
+        {/* Sidebar content - only show text when expanded */}
+        <div className="p-3 overflow-y-auto flex-grow">
+          {/* Projects section */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3
+                className={`font-medium text-sm ${
+                  isOpen ? "opacity-100" : "opacity-0"
+                } transition-opacity`}
+              >
+                {isOpen ? "项目" : ""}
+              </h3>
+              <button
+                onClick={() => setIsTemplateModalOpen(true)}
+                className="text-blue-600 hover:text-blue-800 mr-1"
+                title="创建新项目"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4.5v15m7.5-7.5h-15"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Project list */}
+            <div className="space-y-1.5">
+              {projects.map((project) => (
+                <div
+                  key={project.id}
+                  className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${
+                    project.id === currentProjectId
+                      ? "bg-blue-100 text-blue-700"
+                      : "hover:bg-gray-100"
+                  }`}
+                  onClick={() => handleProjectClick(project.id)}
+                >
+                  <div className="mr-2">
+                    {project.type === "xiaohongshu" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"
+                        />
+                      </svg>
+                    )}
+                    {project.type === "resume" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"
+                        />
+                      </svg>
+                    )}
+                    {project.type === "website" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                  <div
+                    className={`truncate ${
+                      isOpen ? "block" : "hidden"
+                    }`}
+                  >
+                    {project.name}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Divider className="my-3" />
+
+          {/* Gallery link */}
+          <div
+            className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 ${
+              isOpen ? "justify-start" : "justify-center"
+            }`}
+            onClick={() => setIsGalleryModalOpen(true)}
+          >
+            <div className="">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+                />
+              </svg>
+            </div>
+            <div
+              className={`truncate ${
+                isOpen ? "block" : "hidden"
+              }`}
+            >
+              素材库
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Template selection modal */}
+      <Modal 
+        isOpen={isTemplateModalOpen} 
+        onClose={() => setIsTemplateModalOpen(false)}
+        size="3xl"
+      >
+        <ModalContent>
+          <ModalHeader>
+            <h3 className="text-lg font-semibold">选择模板</h3>
+          </ModalHeader>
+          <ModalBody>
+            <div className="mb-4">
+              <div className="flex space-x-2 border-b">
+                <button
+                  onClick={() => setSelectedType("xiaohongshu")}
+                  className={`py-2 px-4 ${
+                    selectedType === "xiaohongshu" 
+                      ? "border-b-2 border-blue-500 text-blue-600 font-medium"
+                      : "text-gray-600 hover:text-gray-800"
+                  }`}
+                >
+                  小红书
+                </button>
+                <button
+                  onClick={() => setSelectedType("resume")}
+                  className={`py-2 px-4 ${
+                    selectedType === "resume" 
+                      ? "border-b-2 border-blue-500 text-blue-600 font-medium"
+                      : "text-gray-600 hover:text-gray-800"
+                  }`}
+                >
+                  简历
+                </button>
+                <button
+                  onClick={() => setSelectedType("website")}
+                  className={`py-2 px-4 ${
+                    selectedType === "website" 
+                      ? "border-b-2 border-blue-500 text-blue-600 font-medium"
+                      : "text-gray-600 hover:text-gray-800"
+                  }`}
+                >
+                  网站
+                </button>
+              </div>
+            </div>
+
+            <Input
+              placeholder="搜索模板..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              startContent={
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5 text-gray-400"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                  />
+                </svg>
+              }
+              className="mb-4"
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {filteredTemplates.map((template) => (
+                <Card 
+                  key={template.id} 
+                  isPressable 
+                  onPress={() => handleTemplateSelect(template.id)}
+                  className="border border-gray-200"
+                >
+                  <CardBody className="p-0">
+                    <img
+                      src={template.thumbnailUrl}
+                      alt={template.name}
+                      className="w-full h-32 object-cover"
+                    />
+                  </CardBody>
+                  <CardFooter className="flex flex-col items-start">
+                    <div className="font-medium">{template.name}</div>
+                    <div className="text-sm text-gray-500 mt-1">{template.description}</div>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      {/* Gallery modal */}
+      <Modal
+        isOpen={isGalleryModalOpen}
+        onClose={() => setIsGalleryModalOpen(false)}
+        size="4xl"
+      >
+        <ModalContent>
+          <ModalHeader>
+            <h3 className="text-lg font-semibold">素材库</h3>
+          </ModalHeader>
+          <ModalBody>
+            <Gallery />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+} 

@@ -16,6 +16,7 @@ interface CodeEditorProps {
 const theme = EditorView.baseTheme({
   "&": {
     fontSize: "16px",
+    height: "100%",
   },
   "&.cm-focused": {
     outline: "none",
@@ -25,6 +26,13 @@ const theme = EditorView.baseTheme({
     border: "none",
     backgroundColor: "white",
   },
+  ".cm-scroller": {
+    fontFamily: "var(--font-mono)",
+    height: "100%",
+  },
+  ".cm-content": {
+    padding: "10px",
+  }
 });
 
 export const MarkdownEditor: React.FC<CodeEditorProps> = ({
@@ -127,5 +135,5 @@ export const MarkdownEditor: React.FC<CodeEditorProps> = ({
     }
   }, [value]);
 
-  return <div ref={editorRef} onPaste={handlePaste} />;
+  return <div ref={editorRef} onPaste={handlePaste} className="h-full" />;
 };

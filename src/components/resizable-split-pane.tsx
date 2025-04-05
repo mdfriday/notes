@@ -68,31 +68,31 @@ export default function ResizableSplitPane({
   }, [handleMouseMove, handleMouseUp]);
 
   return (
-    <div>
+    <div className="h-full w-full">
       {tailwindBreakpoints.has("md") ? (
-        <div className="flex flex-col border-3 border-solid border-gray-300 rounded-2xl overflow-hidden">
-          <div className="flex-1 overflow-auto bg-white">{rightPane}</div>
-          <div className="h-1 bg-gray-300"></div>
-          <div className="flex-1 overflow-auto bg-white">{leftPane}</div>
+        <div className="flex flex-col border border-solid border-gray-200 shadow-sm overflow-hidden h-full bg-white">
+          <div className="flex-1 overflow-auto">{rightPane}</div>
+          <div className="h-1 bg-gray-200"></div>
+          <div className="flex-1 overflow-auto">{leftPane}</div>
         </div>
       ) : (
         <div
           ref={containerRef}
-          className="flex h-full w-full overflow-hidden border-3 border-solid border-gray-300 rounded-2xl"
+          className="flex h-full w-full overflow-hidden border border-solid border-gray-200 shadow-sm bg-white"
         >
           <div
-            className="overflow-auto bg-white"
+            className="h-full overflow-auto"
             style={{ width: `${leftWidth}%` }}
           >
             {leftPane}
           </div>
           <div
-            className="cursor-col-resize bg-gray-300 hover:bg-gray-400 transition-colors"
-            style={{ width: "4px" }}
+            className="cursor-col-resize bg-gray-200 hover:bg-gray-300 transition-colors"
+            style={{ width: "6px" }}
             onDoubleClick={handleDoubleClick}
             onMouseDown={handleMouseDown}
           />
-          <div className="flex-1 overflow-auto bg-white">{rightPane}</div>
+          <div className="flex-1 h-full overflow-auto">{rightPane}</div>
         </div>
       )}
     </div>
