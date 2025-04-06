@@ -14,10 +14,15 @@ import {
   CardFooter 
 } from "@nextui-org/card";
 import { useProject } from '@/contexts/ProjectContext';
-import { createProject } from '@/services/projectService';
 import { useTranslation } from 'react-i18next';
 import { Spinner } from "@nextui-org/spinner";
 import { ShortcodeItem } from '@/types/shortcode';
+
+// 由于可能没有安装 react-hot-toast，使用简单的控制台日志替代
+const toast = {
+  success: (message: string) => console.log('SUCCESS:', message),
+  error: (message: string) => console.error('ERROR:', message)
+};
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -32,7 +37,6 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 }) => {
   const { i18n, t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState<string>('');
   
   // 从上下文中获取项目和Shortcode相关状态和方法
   const {
@@ -62,11 +66,12 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     }
   }, [isOpen, shortcodeTags, selectedTag, selectTag, setCreatingProject]);
 
-  // 处理搜索
-  useEffect(() => {
-    // 这里可以实现搜索功能，暂时不实现
-    // 因为后端API没有提供全文搜索
-  }, [searchTerm]);
+  // 处理搜索（暂不实现全文搜索）
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    // 这里可以实现简单的客户端筛选
+    // 注意：后端API没有提供全文搜索
+  };
 
   // 处理滚动加载更多
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -79,24 +84,41 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
   // 处理模板选择
   const handleShortcodeSelect = async (shortcode: ShortcodeItem) => {
-    // 选择 Shortcode
-    selectShortcode(shortcode);
-    
-    // 创建项目（这将使用选中的 Shortcode 的 example 字段）
     try {
-      // 直接传递 shortcode 参数给 createProjectFromShortcode 函数
+      // 选择 Shortcode
+      selectShortcode(shortcode);
+      
+      // 设置加载状态
+      const loadingToast = toast.success('正在创建项目...');
+      
+      // 创建项目
       const project = await createProjectFromShortcode(shortcode);
+      
       if (project) {
+        toast.success(`项目 "${project.name}" 创建成功`);
         onClose();
+        
         // 通知父组件项目已创建
         if (onProjectCreated && project.id) {
           onProjectCreated(project.id);
         }
+      } else {
+        toast.error('项目创建失败，请重试');
       }
     } catch (error) {
       console.error('Error creating project:', error);
+      toast.error(error instanceof Error ? error.message : '创建项目时发生错误');
     }
   };
+
+  // 筛选 shortcodes
+  const filteredShortcodes = searchTerm 
+    ? shortcodes.filter(shortcode => 
+        shortcode.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (shortcode.description && shortcode.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        shortcode.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    : shortcodes;
 
   return (
     <Modal
@@ -131,7 +153,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
           <Input
             placeholder="搜索模板..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             startContent={
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -156,8 +178,8 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             style={{ maxHeight: '60vh' }}
             onScroll={handleScroll}
           >
-            {shortcodes.length > 0 ? (
-              shortcodes.map((shortcode) => (
+            {filteredShortcodes.length > 0 ? (
+              filteredShortcodes.map((shortcode) => (
                 <Card 
                   key={shortcode.id} 
                   isPressable 
@@ -192,12 +214,12 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                     <span className="ml-2">加载中...</span>
                   </div>
                 ) : (
-                  '没有找到模板'
+                  searchTerm ? '没有找到匹配的模板' : '没有找到模板'
                 )}
               </div>
             )}
             
-            {isLoadingShortcodes && shortcodes.length > 0 && (
+            {isLoadingShortcodes && filteredShortcodes.length > 0 && (
               <div className="col-span-3 py-4 text-center">
                 <Spinner size="sm" color="primary" />
               </div>

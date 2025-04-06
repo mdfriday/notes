@@ -86,6 +86,12 @@ export default function IndexPage() {
           setMarkdown(firstFile.content);
         }
       }
+    } else {
+      // 没有项目时，显示欢迎页面
+      setCurrentProject(null);
+      setSelectedFileId("");
+      setSelectedFile(null);
+      setMarkdown(i18n.language === "zh" ? welcomeMarkdownZh : welcomeMarkdownEn);
     }
     
     // 监听项目变更事件
@@ -155,18 +161,18 @@ export default function IndexPage() {
       try {
         // 处理 markdown 内容
         let parsedHTML = '';
+        
         // 检查是否包含 shortcode 标签
         if (markdown.includes('{{<') && markdown.includes('>}}')) {
-          // 使用全局共享的 shortcode 实例进行三步渲染
+          // 使用 @mdfriday/shortcode 包进行处理
           // Step 1: 替换 shortcodes 为占位符
           const withPlaceholders = stepRender(markdown);
-
+          
           // Step 2: 使用 marked 处理 markdown
           const htmlContent = await markedInstance.parse(withPlaceholders);
           
           // Step 3: 最终渲染，将占位符替换为渲染后的 shortcode 内容
           parsedHTML = finalRender(htmlContent);
-
         } else {
           // 普通 markdown 内容，直接使用 marked 处理
           parsedHTML = await markedInstance.parse(markdown);
@@ -222,7 +228,7 @@ export default function IndexPage() {
   const EditorWithExplorer = (
     <div className="flex h-full w-full">
       {/* 项目文件浏览器 */}
-      {currentProject && (
+      {currentProject ? (
         <ProjectExplorer
           project={currentProject}
           onFileSelect={handleFileSelect}
@@ -232,6 +238,15 @@ export default function IndexPage() {
           onToggleCollapse={toggleProjectExplorer}
           className="shrink-0"
         />
+      ) : (
+        <div className="w-64 h-full border-r border-gray-200 p-4 shrink-0">
+          <div className="text-center">
+            <div className="text-gray-500 mb-2">没有项目</div>
+            <div className="text-sm text-gray-400">
+              请从侧边栏创建新项目
+            </div>
+          </div>
+        </div>
       )}
       
       {/* Markdown 编辑器 */}

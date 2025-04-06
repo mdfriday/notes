@@ -223,13 +223,15 @@ export const deleteProject = (projectId: string): void => {
   }
 };
 
-// 初始化确保至少有一个项目
+// 初始化项目列表
 export const initializeProjects = (language: "zh" | "en" = "zh"): Project | null => {
   const projects = getAllProjects();
   
+  // 没有项目时，返回 null
   if (projects.length === 0) {
-    // 创建默认项目
-    return createProject("xiaohongshu", "default", language);
+    // 不再自动创建默认项目，而是等待用户通过 shortcode 创建
+    localStorage.removeItem(CURRENT_PROJECT_ID_KEY);
+    return null;
   }
   
   // 确保有当前项目ID
