@@ -14,7 +14,6 @@ import { MarkdownEditor } from "@/components/markdown-editor.tsx";
 import welcomeMarkdownZh from "@/data/welcome-zh.md?raw";
 import welcomeMarkdownEn from "@/data/welcome-en.md?raw";
 import { ToolbarState } from "@/state/toolbarState";
-import { Shortcode } from "@mdfriday/shortcode";
 import Sidebar from "@/components/sidebar/Sidebar";
 import ProjectExplorer, { Project, ProjectFile } from "@/components/project/ProjectExplorer";
 import {
@@ -24,9 +23,7 @@ import {
   updateProject,
   initializeProjects
 } from "@/services/projectService";
-
-// Create a Shortcode instance
-const shortcode = new Shortcode();
+import { useProject } from "@/contexts";
 
 // Move marked configuration to a separate constant
 const markedInstance = new Marked(
@@ -57,6 +54,7 @@ const wrapWithContainer = (htmlString: string) => {
 export default function IndexPage() {
   const { i18n } = useTranslation();
   const { articleStyle, template } = ToolbarState.useContainer();
+  const { shortcodeInstance, stepRender, finalRender } = useProject();
 
   const [markdown, setMarkdown] = useState(welcomeMarkdownZh);
   const [isModified, setIsModified] = useState(false);
@@ -154,20 +152,38 @@ export default function IndexPage() {
   // Parse markdown to HTML and apply inline styles
   useEffect(() => {
     const parseMarkdown = async () => {
-      let parsedHTML: string | Promise<string> = "";
-      if (template != "") {
-        parsedHTML = shortcode.render(markdown);
-      } else {
-        parsedHTML = await markedInstance.parse(markdown);
+      try {
+        // 处理 markdown 内容
+        let parsedHTML = '';
+        // 检查是否包含 shortcode 标签
+        if (markdown.includes('{{<') && markdown.includes('>}}')) {
+          // 使用全局共享的 shortcode 实例进行三步渲染
+          // Step 1: 替换 shortcodes 为占位符
+          const withPlaceholders = stepRender(markdown);
+
+          // Step 2: 使用 marked 处理 markdown
+          const htmlContent = await markedInstance.parse(withPlaceholders);
+          
+          // Step 3: 最终渲染，将占位符替换为渲染后的 shortcode 内容
+          parsedHTML = finalRender(htmlContent);
+
+        } else {
+          // 普通 markdown 内容，直接使用 marked 处理
+          parsedHTML = await markedInstance.parse(markdown);
+        }
+        
+        // 处理图片链接并包装 HTML
+        const wrappedHTML = wrapWithContainer(replaceImgSrc(parsedHTML));
+        
+        // 应用内联样式
+        setInlineStyledHTML(inlineStyles(wrappedHTML, articleStyle));
+      } catch (error) {
+        console.error('Error parsing markdown:', error);
       }
-
-      const wrappedHTML = wrapWithContainer(replaceImgSrc(parsedHTML));
-
-      setInlineStyledHTML(inlineStyles(wrappedHTML, articleStyle));
     };
 
     parseMarkdown();
-  }, [markdown, articleStyle]);
+  }, [markdown, articleStyle, stepRender, finalRender]);
 
   const handleMarkdownChange = (newMarkdown: string) => {
     setMarkdown(newMarkdown);

@@ -15,7 +15,8 @@ import {
 } from '../types/api';
 import { 
   ShortcodeItem, 
-  ShortcodeSearchResult 
+  ShortcodeSearchResult,
+  ShortcodeMetadata
 } from '../types/shortcode';
 import { api } from '../utils/apiUtils';
 import { 
@@ -207,5 +208,54 @@ export const shortcodeApiService = {
       console.error(`Error fetching shortcode with ID: ${id}`, error);
       return null;
     }
+  },
+  
+  /**
+   * Fetch a specific shortcode by slug
+   */
+  async fetchShortcodeBySlug(slug: string): Promise<ShortcodeItem | null> {
+    try {
+      console.log(`Fetching shortcode with slug: ${slug}`);
+      
+      // Use search to find by slug
+      const params: Record<string, string | number> = {
+        type: SHORTCODE_REQUEST_PARAMS.type,
+        count: 1,
+        offset: 0,
+        q: `slug:${slug}`
+      };
+      
+      const response = await api.get<ApiResponse<ApiShortcodeItem[]>>(
+        API_ENDPOINTS.SHORTCODE_SEARCH,
+        { params }
+      );
+      
+      console.log('Shortcode by slug API response:', JSON.stringify(response, null, 2));
+      
+      // Validate that we received a valid response
+      if (!response || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
+        console.error('Invalid API response for shortcode by slug:', response);
+        return null;
+      }
+      
+      // Map API shortcode to app's ShortcodeItem format
+      return mapApiShortcodeToShortcodeItem(response.data[0]);
+    } catch (error) {
+      console.error(`Error fetching shortcode with slug: ${slug}`, error);
+      return null;
+    }
+  },
+  
+  /**
+   * Create shortcode metadata from a ShortcodeItem
+   */
+  createShortcodeMetadata(shortcode: ShortcodeItem): ShortcodeMetadata {
+    return {
+      id: parseInt(shortcode.id, 10) || 0, // Convert string id to number
+      name: shortcode.title,
+      template: shortcode.template,
+      uuid: shortcode.id,
+      tags: shortcode.tags
+    };
   }
 }; 

@@ -17,6 +17,7 @@ import { useProject } from '@/contexts/ProjectContext';
 import { createProject } from '@/services/projectService';
 import { useTranslation } from 'react-i18next';
 import { Spinner } from "@nextui-org/spinner";
+import { ShortcodeItem } from '@/types/shortcode';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -77,23 +78,19 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   };
 
   // 处理模板选择
-  const handleShortcodeSelect = async (shortcode: any) => {
+  const handleShortcodeSelect = async (shortcode: ShortcodeItem) => {
     // 选择 Shortcode
     selectShortcode(shortcode);
     
     // 创建项目（这将使用选中的 Shortcode 的 example 字段）
     try {
-      const success = await createProjectFromShortcode();
-      if (success) {
+      // 直接传递 shortcode 参数给 createProjectFromShortcode 函数
+      const project = await createProjectFromShortcode(shortcode);
+      if (project) {
         onClose();
         // 通知父组件项目已创建
-        if (onProjectCreated) {
-          // 这里应该返回新项目的ID
-          // 由于当前 createProjectFromShortcode 实现是模拟的，我们需要获取真实ID
-          const currentId = localStorage.getItem("md_friday_current_project_id");
-          if (currentId) {
-            onProjectCreated(currentId);
-          }
+        if (onProjectCreated && project.id) {
+          onProjectCreated(project.id);
         }
       }
     } catch (error) {

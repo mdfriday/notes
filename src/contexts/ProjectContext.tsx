@@ -1,9 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ShortcodeItem } from '../types/shortcode';
+import { ShortcodeItem, ShortcodeMetadata, ShortcodeSearchResult } from '../types/shortcode';
 import { shortcodeApiService } from '../services/shortcodeApiService';
-import { Shortcode } from '../services/shortcodeService';
-import { createProject } from '../services/projectService';
+import { Shortcode } from '@mdfriday/shortcode';
+import { createProject as projectServiceCreateProject } from '../services/projectService';
+import { Project, ProjectFile } from '../components/project/ProjectExplorer';
 import { useTranslation } from 'react-i18next';
+
+// Toast notification (mock if not available)
+const toast = {
+  error: (message: string) => console.error(message),
+  success: (message: string) => console.log(message)
+};
 
 // Initialize global shortcode instance
 const globalShortcode = new Shortcode();
@@ -18,13 +25,21 @@ interface ProjectContextType {
   isLoadingShortcodes: boolean;
   selectedShortcode: ShortcodeItem | null;
   shortcodeInstance: Shortcode;
+  registeredShortcodes: Map<string, ShortcodeMetadata>;
   
   // Functions
   setCreatingProject: (creating: boolean) => void;
   selectTag: (tag: string) => void;
   loadMoreShortcodes: () => void;
   selectShortcode: (shortcode: ShortcodeItem) => void;
-  createProjectFromShortcode: () => Promise<boolean>;
+  createProjectFromShortcode: (selectedShortcode: ShortcodeItem) => Promise<Project | null>;
+  registerShortcode: (metadata: ShortcodeMetadata) => boolean;
+  isShortcodeRegistered: (name: string) => boolean;
+  getRegisteredShortcode: (name: string) => ShortcodeMetadata | undefined;
+  
+  // Markdown rendering functions
+  stepRender: (markdown: string) => string;
+  finalRender: (html: string) => string;
 }
 
 // Create the context with default values
@@ -37,13 +52,21 @@ const ProjectContext = createContext<ProjectContextType>({
   isLoadingShortcodes: false,
   selectedShortcode: null,
   shortcodeInstance: globalShortcode,
+  registeredShortcodes: new Map(),
   
   // Empty function implementations for default context
   setCreatingProject: () => {},
   selectTag: () => {},
   loadMoreShortcodes: () => {},
   selectShortcode: () => {},
-  createProjectFromShortcode: async () => false,
+  createProjectFromShortcode: async () => null,
+  registerShortcode: () => false,
+  isShortcodeRegistered: () => false,
+  getRegisteredShortcode: () => undefined,
+  
+  // Markdown rendering functions
+  stepRender: (markdown) => markdown,
+  finalRender: (html) => html,
 });
 
 // Props for the context provider
@@ -69,6 +92,11 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
   
   // Selected shortcode
   const [selectedShortcode, setSelectedShortcode] = useState<ShortcodeItem | null>(null);
+  
+  // State for tracking registered shortcodes
+  const [registeredShortcodes, setRegisteredShortcodes] = useState<Map<string, ShortcodeMetadata>>(
+    new Map()
+  );
   
   // Load tags when component mounts
   useEffect(() => {
@@ -146,7 +174,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     setSelectedShortcode(shortcode);
     
     // Register shortcode with the global instance
-    globalShortcode.registerShortcode({
+    registerShortcode({
       id: parseInt(shortcode.id, 10),
       name: shortcode.title,
       template: shortcode.template,
@@ -155,56 +183,117 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     });
   };
   
-  // Create project from selected shortcode
-  const createProjectFromShortcode = async (): Promise<boolean> => {
-    if (!selectedShortcode) {
-      console.error('No shortcode selected for project creation');
+  // Register a shortcode
+  const registerShortcode = (metadata: ShortcodeMetadata): boolean => {
+    try {
+      // Register with the global shortcode instance
+      const result = globalShortcode.registerShortcode(metadata);
+
+      if (result) {
+        // Update our internal tracking of registered shortcodes
+        setRegisteredShortcodes(prev => {
+          const newMap = new Map(prev);
+          newMap.set(metadata.name, metadata);
+          return newMap;
+        });
+        console.log(`Registered shortcode: ${metadata.name}`);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`Error registering shortcode: ${metadata.name}`, error);
       return false;
     }
+  };
+  
+  // Check if a shortcode is registered
+  const isShortcodeRegistered = (name: string): boolean => {
+    return registeredShortcodes.has(name);
+  };
+  
+  // Get a registered shortcode
+  const getRegisteredShortcode = (name: string): ShortcodeMetadata | undefined => {
+    return registeredShortcodes.get(name);
+  };
+  
+  // Step 1 of markdown rendering: replace shortcodes with placeholders
+  const stepRender = (markdown: string): string => {
+    return globalShortcode.stepRender(markdown);
+  };
+  
+  // Step 3 of markdown rendering: final rendering
+  const finalRender = (html: string): string => {
+    return globalShortcode.finalRender(html);
+  };
+  
+  /**
+   * Create a project from a shortcode example
+   */
+  const createProjectFromShortcode = async (selectedShortcode: ShortcodeItem) => {
+    setIsLoadingShortcodes(true);
     
     try {
-      // 使用 Shortcode 的 example 字段作为项目内容
+      console.log('Creating project from shortcode:', selectedShortcode);
+      
+      if (!selectedShortcode) {
+        throw new Error('No shortcode selected');
+      }
+      
+      // 检查是否已经注册了这个 shortcode
+      if (!isShortcodeRegistered(selectedShortcode.slug)) {
+        // 创建 shortcode 元数据并注册
+        const metadata = shortcodeApiService.createShortcodeMetadata(selectedShortcode);
+        registerShortcode(metadata);
+      }
+      
+      // 确定项目类型和默认文件名
+      const projectType =  'xiaohongshu';
+      
+      // 创建项目
+      const timestamp = Date.now().toString();
+      const newProject: Project = {
+        id: `project_${timestamp}`,
+        name: selectedShortcode.title,
+        type: projectType,
+        templateId: `shortcode-${selectedShortcode.id}`,
+        files: [
+          {
+            id: `file_${timestamp}`,
+            name: 'index.md',
+            content: selectedShortcode.example || `{{< ${selectedShortcode.slug} >}}`,
+            isDirectory: false,
+            path: '/index.md'
+          }
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      // 保存项目到本地存储
+      // 使用正确的参数调用 createProject
       const language = i18n.language as "zh" | "en";
+      const updatedProject = projectServiceCreateProject(projectType, `shortcode-${selectedShortcode.id}`, language);
       
-      // 确定项目类型 - 默认为小红书，除非标签中明确指定
-      let projectType: "xiaohongshu" | "resume" | "website" = "xiaohongshu";
-      
-      // 根据标签确定类型
-      if (selectedShortcode.tags.includes('resume') || selectedShortcode.tags.includes('简历')) {
-        projectType = "resume";
-      } else if (selectedShortcode.tags.includes('website') || selectedShortcode.tags.includes('网站')) {
-        projectType = "website";
+      if (updatedProject) {
+        // 设置为当前项目
+        setSelectedShortcode(null);
+        
+        // 触发项目变更事件
+        const projectChangeEvent = new CustomEvent('project-changed', {
+          detail: { projectId: updatedProject.id }
+        });
+        window.dispatchEvent(projectChangeEvent);
+        
+        console.log('Project created successfully:', updatedProject);
       }
       
-      // 创建自定义模板ID
-      const templateId = `shortcode-${selectedShortcode.id}`;
-      
-      // 调用现有的项目创建服务，但使用选定的 shortcode 示例内容
-      const project = createProject(projectType, templateId, language);
-      
-      // 更新项目的index.md文件内容为shortcode示例
-      const indexFile = project.files.find(f => f.name === "index.md");
-      if (indexFile) {
-        indexFile.content = selectedShortcode.example;
-      }
-      
-      // 使用 localStorage 保存修改后的项目
-      const projects = JSON.parse(localStorage.getItem("md_friday_projects") || "[]");
-      const projectIndex = projects.findIndex((p: any) => p.id === project.id);
-      if (projectIndex !== -1) {
-        projects[projectIndex] = project;
-      }
-      localStorage.setItem("md_friday_projects", JSON.stringify(projects));
-      
-      // 重置状态
-      setCreatingProject(false);
-      setSelectedShortcode(null);
-      
-      console.log('Project created successfully from shortcode:', project);
-      return true;
+      return updatedProject;
     } catch (error) {
-      console.error('Error creating project:', error);
-      return false;
+      console.error('Failed to create project from shortcode:', error);
+      toast.error('Failed to create project from shortcode');
+      return null;
+    } finally {
+      setIsLoadingShortcodes(false);
     }
   };
   
@@ -218,12 +307,19 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     isLoadingShortcodes,
     selectedShortcode,
     shortcodeInstance: globalShortcode,
+    registeredShortcodes,
     
     setCreatingProject,
     selectTag,
     loadMoreShortcodes,
     selectShortcode,
     createProjectFromShortcode,
+    registerShortcode,
+    isShortcodeRegistered,
+    getRegisteredShortcode,
+    
+    stepRender,
+    finalRender,
   };
   
   return (
