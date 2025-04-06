@@ -698,10 +698,10 @@
     "@lezer/common" "^1.0.0"
     "@lezer/highlight" "^1.0.0"
 
-"@mdfriday/shortcode@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@mdfriday/shortcode/-/shortcode-0.0.2.tgz#038728fe4451780d080b60171974e36c51ce53e1"
-  integrity sha512-p1stjiwJ/Od1XZ04ouxT1Q1vv7xY42oo2VHU4tAnTfcFFGtNKHqHAlivka29UL4bR3zbJPZ9CWvqu29GsXIn4w==
+"@mdfriday/shortcode@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@mdfriday/shortcode/-/shortcode-0.0.3.tgz#698bc8191714b8f66af2826382a8de29cb537b07"
+  integrity sha512-Pco5LK9MLRP/CLEslrZm3trT1OGSPht4GHOUdQY+goancK4uww+fAvJsHx3if/PMb2fw2J0YJXeezmJbqXkpDA==
 
 "@nextui-org/aria-utils@2.0.26":
   version "2.0.26"
