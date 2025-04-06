@@ -25,6 +25,25 @@ export interface ApiImageItem {
   height: number;
 }
 
+// Shortcode related types
+export interface ApiShortcodeItem {
+  uuid: string;
+  status: string;
+  namespace: string;
+  id: number;
+  slug: string;
+  hash: string;
+  timestamp: number;
+  updated: number;
+  name: string;
+  template: string;
+  example: string;
+  asset: string;
+  tags: string[];
+  width: number;
+  height: number;
+}
+
 // API Params
 export interface ImageListParams {
   type: string;
@@ -39,4 +58,26 @@ export interface ImageSearchParams extends ImageListParams {
 
 export interface ImageTagsParams {
   type: string;
+}
+
+// Shortcode API Params
+export interface ShortcodeListParams {
+  type: string;
+  count: number;
+  offset: number;
+  order: string;
+}
+
+export interface ShortcodeSearchParams extends ShortcodeListParams {
+  q: string;
+}
+
+export interface ShortcodeTagsParams {
+  type: string;
+}
+
+export interface ShortcodeDetailsParams {
+  type: string;
+  status?: string;
+  id: number;
 } 

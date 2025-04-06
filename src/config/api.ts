@@ -30,11 +30,25 @@ export const API_ENDPOINTS = {
   IMAGES: `${API_BASE_URL}/api/images`,
   IMAGE_SEARCH: `${API_BASE_URL}/api/image/search`,
   IMAGE_TAGS: `${API_BASE_URL}/api/image/tags`,
+  
+  // Shortcode endpoints
+  SHORTCODES: `${API_BASE_URL}/api/scs`,
+  SHORTCODE_SEARCH: `${API_BASE_URL}/api/sc/search`,
+  SHORTCODE_TAGS: `${API_BASE_URL}/api/sc/tags`,
+  SHORTCODE_DETAILS: `${API_BASE_URL}/api/sc`,
 };
 
 // Default request parameters
 export const DEFAULT_REQUEST_PARAMS = {
   type: 'Image',
+  count: 10,
+  offset: 0,
+  order: 'desc',
+};
+
+// Shortcode specific parameters
+export const SHORTCODE_REQUEST_PARAMS = {
+  type: 'ShortCode',
   count: 10,
   offset: 0,
   order: 'desc',

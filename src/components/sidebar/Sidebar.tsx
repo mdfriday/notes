@@ -7,25 +7,16 @@ import { Card, CardBody, CardFooter } from "@nextui-org/card";
 import Gallery from "@/components/gallery/Gallery";
 import { 
   getAllProjects, 
-  createProject as createProjectService,
   setCurrentProjectId
 } from "@/services/projectService";
 import { Project } from "@/components/project/ProjectExplorer";
 import { useTranslation } from "react-i18next";
+import CreateProjectModal from "@/components/project/CreateProjectModal";
 
 interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
   onProjectSelect?: (projectId: string) => void;
-}
-
-// 定义项目类型和模板接口
-interface Template {
-  id: string;
-  name: string;
-  description: string;
-  thumbnailUrl: string;
-  type: "xiaohongshu" | "resume" | "website";
 }
 
 export default function Sidebar({ isOpen, onToggle, onProjectSelect }: SidebarProps) {
@@ -35,8 +26,6 @@ export default function Sidebar({ isOpen, onToggle, onProjectSelect }: SidebarPr
 
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedType, setSelectedType] = useState<"xiaohongshu" | "resume" | "website">("xiaohongshu");
 
   // 初始化加载项目
   useEffect(() => {
@@ -63,60 +52,8 @@ export default function Sidebar({ isOpen, onToggle, onProjectSelect }: SidebarPr
     };
   }, []);
 
-  // 模板数据示例
-  const templates: Template[] = [
-    { 
-      id: "xiaohongshu-1", 
-      name: "旅行分享", 
-      description: "分享你的旅行见闻和精彩瞬间", 
-      thumbnailUrl: "https://via.placeholder.com/150?text=旅行分享", 
-      type: "xiaohongshu" 
-    },
-    { 
-      id: "xiaohongshu-2", 
-      name: "美食推荐", 
-      description: "分享美食攻略和餐厅推荐", 
-      thumbnailUrl: "https://via.placeholder.com/150?text=美食推荐", 
-      type: "xiaohongshu" 
-    },
-    { 
-      id: "resume-1", 
-      name: "简约风格", 
-      description: "简约专业的简历模板，突出个人技能", 
-      thumbnailUrl: "https://via.placeholder.com/150?text=简约风格", 
-      type: "resume" 
-    },
-    { 
-      id: "resume-2", 
-      name: "创意设计", 
-      description: "适合创意行业的简历，展示个人特色", 
-      thumbnailUrl: "https://via.placeholder.com/150?text=创意设计", 
-      type: "resume" 
-    },
-    { 
-      id: "website-1", 
-      name: "个人博客", 
-      description: "简洁的个人博客网站，展示文章和作品", 
-      thumbnailUrl: "https://via.placeholder.com/150?text=个人博客", 
-      type: "website" 
-    },
-    { 
-      id: "website-2", 
-      name: "作品集", 
-      description: "展示个人作品的专业网站模板", 
-      thumbnailUrl: "https://via.placeholder.com/150?text=作品集", 
-      type: "website" 
-    },
-  ];
-
-  // 根据搜索词和选中类型过滤模板
-  const filteredTemplates = templates.filter(template => 
-    template.type === selectedType && 
-    (searchTerm === "" || 
-     template.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-     template.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
+  // 模板数据不再需要，已由后端接口提供
+  
   const handleProjectClick = (id: string) => {
     setCurrentProjectId(id);
     setCurrentProjectIdState(id);
@@ -129,25 +66,21 @@ export default function Sidebar({ isOpen, onToggle, onProjectSelect }: SidebarPr
     window.dispatchEvent(new CustomEvent("project-changed", { detail: { projectId: id } }));
   };
 
-  const handleTemplateSelect = (templateId: string) => {
-    // 根据选中的模板创建项目
-    const language = i18n.language as "zh" | "en";
-    const newProject = createProjectService(selectedType, templateId, language);
+  const handleProjectCreated = (projectId: string) => {
+    // 重新加载项目列表
+    const allProjects = getAllProjects();
+    setProjects(allProjects);
     
-    // 更新项目列表
-    setProjects(prev => [...prev, newProject]);
-    setCurrentProjectIdState(newProject.id);
+    // 设置当前项目ID
+    setCurrentProjectIdState(projectId);
     
     // 通知父组件
     if (onProjectSelect) {
-      onProjectSelect(newProject.id);
+      onProjectSelect(projectId);
     }
     
-    // 关闭模态框
-    setIsTemplateModalOpen(false);
-    
-    // 触发一个自定义事件以通知其他组件
-    window.dispatchEvent(new CustomEvent("project-changed", { detail: { projectId: newProject.id } }));
+    // 触发项目变更事件
+    window.dispatchEvent(new CustomEvent("project-changed", { detail: { projectId } }));
   };
 
   return (
@@ -325,100 +258,12 @@ export default function Sidebar({ isOpen, onToggle, onProjectSelect }: SidebarPr
         </div>
       </div>
 
-      {/* Template selection modal */}
-      <Modal 
-        isOpen={isTemplateModalOpen} 
+      {/* 使用新的 CreateProjectModal 组件 */}
+      <CreateProjectModal
+        isOpen={isTemplateModalOpen}
         onClose={() => setIsTemplateModalOpen(false)}
-        size="3xl"
-      >
-        <ModalContent>
-          <ModalHeader>
-            <h3 className="text-lg font-semibold">选择模板</h3>
-          </ModalHeader>
-          <ModalBody>
-            <div className="mb-4">
-              <div className="flex space-x-2 border-b">
-                <button
-                  onClick={() => setSelectedType("xiaohongshu")}
-                  className={`py-2 px-4 ${
-                    selectedType === "xiaohongshu" 
-                      ? "border-b-2 border-blue-500 text-blue-600 font-medium"
-                      : "text-gray-600 hover:text-gray-800"
-                  }`}
-                >
-                  小红书
-                </button>
-                <button
-                  onClick={() => setSelectedType("resume")}
-                  className={`py-2 px-4 ${
-                    selectedType === "resume" 
-                      ? "border-b-2 border-blue-500 text-blue-600 font-medium"
-                      : "text-gray-600 hover:text-gray-800"
-                  }`}
-                >
-                  简历
-                </button>
-                <button
-                  onClick={() => setSelectedType("website")}
-                  className={`py-2 px-4 ${
-                    selectedType === "website" 
-                      ? "border-b-2 border-blue-500 text-blue-600 font-medium"
-                      : "text-gray-600 hover:text-gray-800"
-                  }`}
-                >
-                  网站
-                </button>
-              </div>
-            </div>
-
-            <Input
-              placeholder="搜索模板..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              startContent={
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5 text-gray-400"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                  />
-                </svg>
-              }
-              className="mb-4"
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {filteredTemplates.map((template) => (
-                <Card 
-                  key={template.id} 
-                  isPressable 
-                  onPress={() => handleTemplateSelect(template.id)}
-                  className="border border-gray-200"
-                >
-                  <CardBody className="p-0">
-                    <img
-                      src={template.thumbnailUrl}
-                      alt={template.name}
-                      className="w-full h-32 object-cover"
-                    />
-                  </CardBody>
-                  <CardFooter className="flex flex-col items-start">
-                    <div className="font-medium">{template.name}</div>
-                    <div className="text-sm text-gray-500 mt-1">{template.description}</div>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+        onProjectCreated={handleProjectCreated}
+      />
 
       {/* Gallery modal */}
       <Modal

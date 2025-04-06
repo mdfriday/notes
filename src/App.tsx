@@ -1,6 +1,7 @@
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
+import { ProjectProvider } from "@/contexts";
 
 import IndexPage from "@/pages/index";
 import DocsPage from "@/pages/docs";
@@ -37,7 +38,7 @@ function LanguageSwitcher() {
 
 function App() {
   return (
-    <>
+    <ProjectProvider>
       <LanguageSwitcher />
       <Routes>
         <Route element={<IndexPage />} path="/:lang" />
@@ -47,7 +48,7 @@ function App() {
         <Route element={<AboutPage />} path="/:lang/about" />
         <Route element={<PhotosPage />} path="/:lang/photos" />
       </Routes>
-    </>
+    </ProjectProvider>
   );
 }
 
