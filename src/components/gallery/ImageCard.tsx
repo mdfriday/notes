@@ -9,9 +9,9 @@ interface ImageCardProps {
 }
 
 const ImageCard = ({ image, onClick, prefetched = false }: ImageCardProps) => {
-  const { title, description, tags, width, height } = image;
+  const { id, title, description, tags, width, height } = image;
   // Use thumbnail URL for better performance
-  const thumbnailUrl = getGalleryThumbnailUrl(width, height);
+  const thumbnailUrl = getGalleryThumbnailUrl(id, width, height);
   const [isLoaded, setIsLoaded] = useState(prefetched); // If prefetched, consider it loaded
   const [isVisible, setIsVisible] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);

@@ -47,7 +47,7 @@ const Gallery = () => {
   
   // Optimized image prefetching with proper caching
   const prefetchImage = useCallback((image: ImageItem) => {
-    const thumbnailUrl = getGalleryThumbnailUrl(image.width, image.height);
+    const thumbnailUrl = getGalleryThumbnailUrl(image.id, image.width, image.height);
     
     // Use the global cache to avoid recreating images
     if (globalImageCache.has(thumbnailUrl)) {
@@ -365,7 +365,7 @@ const Gallery = () => {
                 <ImageCard 
                   image={image} 
                   onClick={handleImageClick}
-                  prefetched={globalImageCache.has(getGalleryThumbnailUrl(image.width, image.height))}
+                  prefetched={globalImageCache.has(getGalleryThumbnailUrl(image.id, image.width, image.height))}
                 />
               </div>
             ))}

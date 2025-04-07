@@ -1,5 +1,6 @@
 export interface ImageItem {
-  id: string;
+  id: number;
+  uuid: string;
   url: string;
   title: string;
   description?: string;

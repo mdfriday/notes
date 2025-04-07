@@ -20,7 +20,8 @@ import { api } from '@/core/utils/apiUtils.ts';
  */
 function mapApiImageToImageItem(apiImage: ApiImageItem): ImageItem {
   return {
-    id: apiImage.uuid,
+    id: apiImage.id,
+    uuid: apiImage.uuid,
     url: apiImage.asset,
     title: apiImage.name,
     description: apiImage.slug !== apiImage.name ? apiImage.slug : undefined,
