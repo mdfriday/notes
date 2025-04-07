@@ -17,7 +17,7 @@ import LangButton from "@/components/lang-button.tsx";
 import StyleSettingPopover from "@/components/toolbar/style-setting-popover.tsx";
 import CopyButtonGroup from "@/components/toolbar/copy-button-group.tsx";
 import DownloadButtonGroup from "@/components/toolbar/download-button-group.tsx";
-import { ToolbarState } from "@/state/toolbarState";
+import { ToolbarState } from "@/core/state/toolbarState";
 import { loadCSS, markdownStyles } from "@/config/post-styles.ts";
 import { loadTemplate, templateExamples } from "@/config/post-template.ts";
 import { useEffect } from "react";

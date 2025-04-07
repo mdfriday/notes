@@ -1,6 +1,6 @@
-import type { ImageItem } from '../types/gallery';
-import { imageApiService } from './imageApiService';
-import { API_FEATURES } from '../config/api';
+import type { ImageItem } from '../../types/gallery.ts';
+import { imageApiService } from './imageApiService.ts';
+import { API_FEATURES } from '../../config/api.ts';
 
 // Flag to determine whether to use mock data or real API
 const USE_MOCK_DATA = !API_FEATURES.USE_REAL_API;

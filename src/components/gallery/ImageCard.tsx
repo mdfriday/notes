@@ -1,6 +1,6 @@
 import type { ImageItem } from '@/types/gallery';
 import { memo, useState, useEffect, useRef } from 'react';
-import { getGalleryThumbnailUrl } from '@/utils/imageUtils';
+import { getGalleryThumbnailUrl } from '@/core/utils/imageUtils';
 
 interface ImageCardProps {
   image: ImageItem;

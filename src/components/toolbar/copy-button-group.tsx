@@ -12,8 +12,8 @@ import { Copy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ChevronDownIcon } from "@/components/icons.tsx";
-import { copyHtmlWithStyle } from "@/lib/copy-html.tsx";
-import { isSafari } from "@/lib/is-safari.ts";
+import { copyHtmlWithStyle } from "@/core/utils/copy-html.tsx";
+import { isSafari } from "@/core/utils/is-safari.ts";
 
 export default function CopyButtonGroup() {
   const { t } = useTranslation();

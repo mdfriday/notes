@@ -7,10 +7,10 @@ import { Analytics } from "@vercel/analytics/react";
 import { Provider } from "./provider.tsx";
 // eslint-disable-next-line import/order
 import App from "./App.tsx";
-import "@/css/globals.css";
+import "@/assets/css/globals.css";
 
-import "./lib/i18n.ts";
-import { ToolbarState } from "./state/toolbarState.ts";
+import "./core/utils/i18n.ts";
+import { ToolbarState } from "@/core/state/toolbarState.ts";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

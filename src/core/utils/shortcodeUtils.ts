@@ -1,8 +1,8 @@
 /**
  * Utility functions for working with shortcodes
  */
-import { API_BASE_URL } from '../config/api';
-import { ThumbnailParams } from '../types/shortcode';
+import { API_BASE_URL } from '../../config/api.ts';
+import { ThumbnailParams } from '../../types/shortcode.ts';
 
 /**
  * Calculate proportional dimensions to maintain aspect ratio

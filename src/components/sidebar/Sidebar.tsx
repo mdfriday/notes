@@ -8,7 +8,7 @@ import Gallery from "@/components/gallery/Gallery";
 import { 
   getAllProjects, 
   setCurrentProjectId
-} from "@/services/projectService";
+} from "@/core/services/projectService";
 import { Project } from "@/components/project/ProjectExplorer";
 import { useTranslation } from "react-i18next";
 import CreateProjectModal from "@/components/project/CreateProjectModal";

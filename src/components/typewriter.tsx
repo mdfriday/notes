@@ -3,7 +3,7 @@
 import { motion, stagger, useAnimate, useInView } from "framer-motion";
 import { useEffect } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/core/utils/utils.ts";
 
 export const Typewriter = ({
   words,

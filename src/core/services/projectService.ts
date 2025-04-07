@@ -1,4 +1,4 @@
-import { Project, ProjectFile } from "@/components/project/ProjectExplorer";
+import { Project, ProjectFile } from "@/components/project/ProjectExplorer.tsx";
 import welcomeMarkdownZh from "@/data/welcome-zh.md?raw";
 import welcomeMarkdownEn from "@/data/welcome-en.md?raw";
 

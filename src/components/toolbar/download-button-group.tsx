@@ -12,7 +12,7 @@ import * as htmlToImage from "html-to-image";
 import { Download } from "lucide-react";
 
 import { ChevronDownIcon } from "@/components/icons.tsx";
-import { isSafari } from "@/lib/is-safari.ts";
+import { isSafari } from "@/core/utils/is-safari.ts";
 
 interface DownloadButtonGroupProps {
   markdown: string;

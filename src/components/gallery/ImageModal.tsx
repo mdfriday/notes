@@ -1,6 +1,6 @@
 import { useEffect, memo, useState } from 'react';
 import type { ImageItem } from '@/types/gallery';
-import { getFullAssetUrl } from '@/utils/imageUtils';
+import { getFullAssetUrl } from '@/core/utils/imageUtils';
 
 interface ImageModalProps {
   image: ImageItem | null;

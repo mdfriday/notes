@@ -1,7 +1,7 @@
 /**
  * API utilities for making HTTP requests with error handling and caching
  */
-import { CACHE_CONFIG } from '../config/api';
+import { CACHE_CONFIG } from '../../config/api.ts';
 
 // Cache storage for Etags
 const etagCache = new Map<string, string>();

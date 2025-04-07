@@ -1,5 +1,5 @@
 import { useLayoutEffect, useState } from "react";
-import { useWindowSize } from "@/lib/use-window-size.tsx";
+import { useWindowSize } from "@/core/utils/use-window-size.tsx";
 
 const breakpoints = {
   sm: 640,

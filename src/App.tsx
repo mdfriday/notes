@@ -1,7 +1,7 @@
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
-import { ProjectProvider } from "@/contexts";
+import { ProjectProvider } from "@/core/domain";
 
 import IndexPage from "@/pages/index";
 import DocsPage from "@/pages/docs";

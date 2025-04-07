@@ -7,7 +7,7 @@ export const copyHtmlWithStyle = async (elementId: string) => {
     return;
   }
 
-  // Clone the element and include all styles as inline styles
+  // Clone the element and include all themes as inline themes
   const clone = element.cloneNode(true) as HTMLElement;
 
   const inlineStyles = (element: HTMLElement) => {
@@ -20,7 +20,7 @@ export const copyHtmlWithStyle = async (elementId: string) => {
     }
   };
 
-  // Apply inline styles recursively
+  // Apply inline themes recursively
   const applyStylesRecursively = (element: HTMLElement) => {
     inlineStyles(element);
     Array.from(element.children).forEach((child) =>
@@ -34,7 +34,7 @@ export const copyHtmlWithStyle = async (elementId: string) => {
   const htmlContent = clone.outerHTML;
 
   try {
-    // Use Clipboard API to copy the HTML with inline styles
+    // Use Clipboard API to copy the HTML with inline themes
     await navigator.clipboard.write([
       new ClipboardItem({
         "text/html": new Blob([htmlContent], { type: "text/html" }),

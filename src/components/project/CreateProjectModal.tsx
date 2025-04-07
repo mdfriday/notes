@@ -13,7 +13,7 @@ import {
   CardBody, 
   CardFooter 
 } from "@nextui-org/card";
-import { useProject } from '@/contexts/ProjectContext';
+import { useProject } from '@/core/domain/ProjectContext.tsx';
 import { useTranslation } from 'react-i18next';
 import { Spinner } from "@nextui-org/spinner";
 import { ShortcodeItem } from '@/types/shortcode';

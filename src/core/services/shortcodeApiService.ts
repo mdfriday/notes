@@ -4,7 +4,7 @@
 import { 
   API_ENDPOINTS, 
   SHORTCODE_REQUEST_PARAMS 
-} from '../config/api';
+} from '../../config/api.ts';
 import {
   ApiResponse,
   ApiShortcodeItem,
@@ -12,18 +12,18 @@ import {
   ShortcodeSearchParams,
   ShortcodeTagsParams,
   ShortcodeDetailsParams
-} from '../types/api';
+} from '../../types/api.ts';
 import { 
   ShortcodeItem, 
   ShortcodeSearchResult,
   ShortcodeMetadata
-} from '../types/shortcode';
-import { api } from '../utils/apiUtils';
+} from '../../types/shortcode.ts';
+import { api } from '@/core/utils/apiUtils.ts';
 import { 
   getThumbnailUrl, 
   getFullAssetUrl, 
   buildShortcodeTagsQuery 
-} from '../utils/shortcodeUtils';
+} from '@/core/utils/shortcodeUtils.ts';
 
 /**
  * Maps API Shortcode item to the app's ShortcodeItem format

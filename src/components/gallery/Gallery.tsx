@@ -6,8 +6,8 @@ import ImageModal from './ImageModal';
 import MasonryGrid from './MasonryGrid';
 import SearchBar from './SearchBar';
 import TagFilter from './TagFilter';
-import { fetchImages, getAllTags } from '@/services/imageService';
-import { getGalleryThumbnailUrl } from '@/utils/imageUtils';
+import { fetchImages, getAllTags } from '@/core/services/imageService';
+import { getGalleryThumbnailUrl } from '@/core/utils/imageUtils';
 
 // Global image cache to persist between renders
 const globalImageCache = new Map<string, HTMLImageElement>();

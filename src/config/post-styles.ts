@@ -1,9 +1,9 @@
-import githubStyle from "@/styles/github.css?raw";
-import newspaperStyle from "@/styles/newspaper.css?raw";
-import posterStyle from "@/styles/poster.css?raw";
-import slimStyle from "@/styles/slim.css?raw";
-import noteStyle from "@/styles/note.css?raw";
-import twStyle from "@/styles/thoughtworks.css?raw";
+import githubStyle from "@/data/themes/github.css?raw";
+import newspaperStyle from "@/data/themes/newspaper.css?raw";
+import posterStyle from "@/data/themes/poster.css?raw";
+import slimStyle from "@/data/themes/slim.css?raw";
+import noteStyle from "@/data/themes/note.css?raw";
+import twStyle from "@/data/themes/thoughtworks.css?raw";
 
 export const markdownStyles = [
   { name: "github", css: githubStyle },

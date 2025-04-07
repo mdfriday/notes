@@ -5,7 +5,7 @@ import { basicSetup } from "codemirror";
 import React, { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
-import { createMarkdownImage, saveImageBase64 } from "@/lib/image-store";
+import { createMarkdownImage, saveImageBase64 } from "@/core/utils/image-store.tsx";
 import { useTranslation } from "react-i18next";
 
 interface CodeEditorProps {

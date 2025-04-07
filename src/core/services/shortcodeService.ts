@@ -1,7 +1,7 @@
 /**
  * Shortcode service for registering and rendering shortcodes
  */
-import { ShortcodeMetadata } from '../types/shortcode';
+import { ShortcodeMetadata } from '../../types/shortcode.ts';
 
 /**
  * Shortcode class to handle registration and rendering of shortcodes

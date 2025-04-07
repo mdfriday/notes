@@ -41,7 +41,7 @@ export default function inlineStyles(html: string, css: string): string {
     });
   });
 
-  // Apply styles to matching elements
+  // Apply themes to matching elements
   try {
     Object.entries(styleRules).forEach(([selector, styles]) => {
       const elements = tempDiv.querySelectorAll(selector);
@@ -55,7 +55,7 @@ export default function inlineStyles(html: string, css: string): string {
       });
     });
   } catch (error) {
-    console.error("Error applying inline styles:", error);
+    console.error("Error applying inline themes:", error);
   }
 
   return tempDiv.innerHTML;

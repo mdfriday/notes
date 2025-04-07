@@ -6,7 +6,7 @@ import CopyButtonGroup from "./copy-button-group.tsx";
 import DownloadButtonGroup from "./download-button-group.tsx";
 
 import StyleSettingPopover from "@/components/toolbar/style-setting-popover.tsx";
-import { ToolbarState } from "@/state/toolbarState";
+import { ToolbarState } from "@/core/state/toolbarState";
 import { loadCSS, markdownStyles } from "@/config/post-styles.ts";
 import { loadTemplate, templateExamples } from "@/config/post-template.ts";
 

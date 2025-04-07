@@ -7,13 +7,13 @@ import markedKatex from "marked-katex-extension";
 
 import DefaultLayout from "@/layouts/default";
 import ResizableSplitPane from "@/components/resizable-split-pane";
-import inlineStyles from "@/lib/inline-styles";
-import { replaceImgSrc } from "@/lib/image-store";
+import inlineStyles from "@/core/utils/inline-styles.tsx";
+import { replaceImgSrc } from "@/core/utils/image-store.tsx";
 import { TypewriterHero } from "@/components/typewriter-hero";
 import { MarkdownEditor } from "@/components/markdown-editor.tsx";
 import welcomeMarkdownZh from "@/data/welcome-zh.md?raw";
 import welcomeMarkdownEn from "@/data/welcome-en.md?raw";
-import { ToolbarState } from "@/state/toolbarState";
+import { ToolbarState } from "@/core/state/toolbarState";
 import Sidebar from "@/components/sidebar/Sidebar";
 import ProjectExplorer, { Project, ProjectFile } from "@/components/project/ProjectExplorer";
 import {
@@ -22,8 +22,8 @@ import {
   updateFileContent,
   updateProject,
   initializeProjects
-} from "@/services/projectService";
-import { useProject } from "@/contexts";
+} from "@/core/services/projectService";
+import { useProject } from "@/core/domain";
 
 // Move marked configuration to a separate constant
 const markedInstance = new Marked(
@@ -155,7 +155,7 @@ export default function IndexPage() {
     }
   }, [template]);
 
-  // Parse markdown to HTML and apply inline styles
+  // Parse markdown to HTML and apply inline themes
   useEffect(() => {
     const parseMarkdown = async () => {
       try {

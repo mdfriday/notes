@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ShortcodeItem, ShortcodeMetadata, ShortcodeSearchResult } from '../types/shortcode';
-import { shortcodeApiService } from '../services/shortcodeApiService';
+import { ShortcodeItem, ShortcodeMetadata, ShortcodeSearchResult } from '../../types/shortcode.ts';
+import { shortcodeApiService } from '@/core/services/shortcodeApiService.ts';
 import { Shortcode } from '@mdfriday/shortcode';
-import { createProject as projectServiceCreateProject } from '../services/projectService';
-import { Project, ProjectFile } from '../components/project/ProjectExplorer';
+import { createProject as projectServiceCreateProject } from '@/core/services/projectService.ts';
+import { Project, ProjectFile } from '../../components/project/ProjectExplorer.tsx';
 import { useTranslation } from 'react-i18next';
 
 // Toast notification (mock if not available)

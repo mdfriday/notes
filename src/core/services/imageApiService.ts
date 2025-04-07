@@ -4,16 +4,16 @@
 import { 
   API_ENDPOINTS, 
   DEFAULT_REQUEST_PARAMS 
-} from '../config/api';
+} from '../../config/api.ts';
 import { 
   ApiResponse, 
   ApiImageItem, 
   ImageListParams, 
   ImageSearchParams, 
   ImageTagsParams 
-} from '../types/api';
-import { ImageItem } from '../types/gallery';
-import { api } from '../utils/apiUtils';
+} from '../../types/api.ts';
+import { ImageItem } from '../../types/gallery.ts';
+import { api } from '@/core/utils/apiUtils.ts';
 
 /**
  * Maps API Image item to the app's ImageItem format

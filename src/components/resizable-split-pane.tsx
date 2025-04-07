@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useRef } from "react";
 
-import useTailwindBreakpoints from "@/lib/use-tailwind-breakpoints";
+import useTailwindBreakpoints from "@/core/utils/use-tailwind-breakpoints.tsx";
 
 interface ResizableSplitPaneProps {
   leftPane: React.ReactNode;

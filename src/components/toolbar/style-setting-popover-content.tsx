@@ -5,12 +5,12 @@ import { Slider } from "@nextui-org/slider";
 import { useTranslation } from "react-i18next";
 import { Input } from "@nextui-org/input";
 
-import { ToolbarState } from "@/state/toolbarState.ts";
+import { ToolbarState } from "@/core/state/toolbarState.ts";
 import {
   cssToRecord,
   extractContainerLayoutContent,
   objectToStyleString,
-} from "@/utils/styletransfer.ts";
+} from "@/core/utils/styletransfer.ts";
 
 const ColorBox = ({
   newStyle,
