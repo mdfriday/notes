@@ -83,48 +83,65 @@ export const IntegratedNavbar: React.FC<IntegratedNavbarProps> = ({ markdown }) 
       </NavbarContent>
 
       {/* 中部工具栏 */}
-      <NavbarContent 
-        className="flex-1 gap-2 items-center justify-center" 
-        justify="center"
-      >
-        <Select
-          className="max-w-[200px]"
-          size="sm"
-          disallowEmptySelection={true}
-          aria-label={t("toolbar.selectStyleText")}
-          labelPlacement="outside-left"
-          selectedKeys={[selectedStyle]}
-          onChange={(e) => setSelectedStyle(e.target.value)}
-        >
-          {markdownStyles.map((style) => (
-            <SelectItem key={style.name} value={style.name}>
-              {t(`postStyle.${style.name}`)}
-            </SelectItem>
-          ))}
-        </Select>
+      {/*<NavbarContent */}
+      {/*  className="flex-1 gap-2 items-center justify-center" */}
+      {/*  justify="center"*/}
+      {/*>*/}
+        {/*<Select*/}
+        {/*  className="max-w-[200px]"*/}
+        {/*  size="sm"*/}
+        {/*  disallowEmptySelection={true}*/}
+        {/*  aria-label={t("toolbar.selectStyleText")}*/}
+        {/*  labelPlacement="outside-left"*/}
+        {/*  selectedKeys={[selectedStyle]}*/}
+        {/*  onChange={(e) => setSelectedStyle(e.target.value)}*/}
+        {/*>*/}
+        {/*  {markdownStyles.map((style) => (*/}
+        {/*    <SelectItem key={style.name} value={style.name}>*/}
+        {/*      {t(`postStyle.${style.name}`)}*/}
+        {/*    </SelectItem>*/}
+        {/*  ))}*/}
+        {/*</Select>*/}
 
-        <Select
-          className="max-w-[220px]"
-          size="sm"
-          disallowEmptySelection={true}
-          aria-label={t("toolbar.selectTemplateText")}
-          labelPlacement="outside-left"
-          selectedKeys={[selectedTemplate]}
-          onChange={(e) => setSelectedTemplate(e.target.value)}
-        >
-          {templateExamples.map((style) => (
-            <SelectItem key={style.name} value={style.name}>
-              {t(`templateName.${style.name}`)}
-            </SelectItem>
-          ))}
-        </Select>
-      </NavbarContent>
+        {/*<Select*/}
+        {/*  className="max-w-[220px]"*/}
+        {/*  size="sm"*/}
+        {/*  disallowEmptySelection={true}*/}
+        {/*  aria-label={t("toolbar.selectTemplateText")}*/}
+        {/*  labelPlacement="outside-left"*/}
+        {/*  selectedKeys={[selectedTemplate]}*/}
+        {/*  onChange={(e) => setSelectedTemplate(e.target.value)}*/}
+        {/*>*/}
+        {/*  {templateExamples.map((style) => (*/}
+        {/*    <SelectItem key={style.name} value={style.name}>*/}
+        {/*      {t(`templateName.${style.name}`)}*/}
+        {/*    </SelectItem>*/}
+        {/*  ))}*/}
+        {/*</Select>*/}
+      {/*</NavbarContent>*/}
 
       {/* 右侧工具和用户功能区 */}
       <NavbarContent 
         justify="end" 
         className="gap-2"
       >
+
+        <Select
+            className="max-w-[200px]"
+            size="sm"
+            disallowEmptySelection={true}
+            aria-label={t("toolbar.selectStyleText")}
+            labelPlacement="outside-left"
+            selectedKeys={[selectedStyle]}
+            onChange={(e) => setSelectedStyle(e.target.value)}
+        >
+          {markdownStyles.map((style) => (
+              <SelectItem key={style.name} value={style.name}>
+                {t(`postStyle.${style.name}`)}
+              </SelectItem>
+          ))}
+        </Select>
+
         <NavbarItem>
           <StyleSettingPopover />
         </NavbarItem>
@@ -137,9 +154,9 @@ export const IntegratedNavbar: React.FC<IntegratedNavbarProps> = ({ markdown }) 
           <DownloadButtonGroup markdown={markdown} />
         </NavbarItem>
         
-        <NavbarItem>
-          <LangButton />
-        </NavbarItem>
+        {/*<NavbarItem>*/}
+        {/*  <LangButton />*/}
+        {/*</NavbarItem>*/}
       </NavbarContent>
     </NextUINavbar>
   );
