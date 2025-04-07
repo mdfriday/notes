@@ -48,6 +48,7 @@ export function calculateProportionalDimensions(
  * Generate thumbnail URL for shortcode assets
  */
 export function getThumbnailUrl({
+    id,
   assetUrl,
   width,
   height,
@@ -69,9 +70,9 @@ export function getThumbnailUrl({
     maxWidth,
     maxHeight
   );
-  
+
   // Return thumbnail URL in the format specified by the API
-  return `${API_BASE_URL}/image/${thumbWidth}/${thumbHeight}${assetUrl}`;
+  return `${API_BASE_URL}/image/id/${id}/${thumbWidth}/${thumbHeight}`;
 }
 
 /**

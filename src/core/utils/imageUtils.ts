@@ -66,7 +66,7 @@ export function getThumbnailUrl(
   originalHeight: number,
   options: ThumbnailOptions = {}
 ): string {
-  const { maxWidth = 400, maxHeight = 300, maintainAspectRatio = true } = options;
+  const { maxWidth = 200, maxHeight = 300, maintainAspectRatio = true } = options;
   
   let width = options.width;
   let height = options.height;
@@ -102,8 +102,8 @@ export function getGalleryThumbnailUrl(
   // For gallery view, we want smaller thumbnails for better performance
   return getThumbnailUrl(originalWidth, originalHeight, {
     id,
-    maxWidth: 400,  // Limit max width for gallery
-    maxHeight: 600, // Allow taller images for masonry layout
+    maxWidth: 200,  // Limit max width for gallery
+    maxHeight: 300, // Allow taller images for masonry layout
     maintainAspectRatio: true
   });
 } 

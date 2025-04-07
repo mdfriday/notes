@@ -28,6 +28,7 @@ export interface ShortcodeMetadata {
 
 // Parameters for getThumbnailUrl
 export interface ThumbnailParams {
+  id: number;
   assetUrl: string;
   width: number;
   height: number;

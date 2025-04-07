@@ -39,6 +39,7 @@ function mapApiShortcodeToShortcodeItem(apiShortcode: ApiShortcodeItem): Shortco
     tags: apiShortcode.tags,
     asset: getFullAssetUrl(apiShortcode.asset),
     thumbnail: getThumbnailUrl({
+      id: apiShortcode.id,
       assetUrl: apiShortcode.asset,
       width: apiShortcode.width,
       height: apiShortcode.height
