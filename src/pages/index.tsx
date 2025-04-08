@@ -24,6 +24,7 @@ import {
   initializeProjects
 } from "@/core/services/projectService";
 import { useProject } from "@/core/domain";
+import { shortcodeService } from "@/core/services/shortcodeService";
 
 // Move marked configuration to a separate constant
 const markedInstance = new Marked(
@@ -83,7 +84,21 @@ export default function IndexPage() {
         if (firstFile) {
           setSelectedFileId(firstFile.id);
           setSelectedFile(firstFile);
-          setMarkdown(firstFile.content);
+          
+          // 在设置 markdown 内容之前，确保所有 shortcode 都已注册
+          const loadFileWithShortcodes = async () => {
+            try {
+              // 检查内容中的 shortcode 并确保它们已注册
+              await shortcodeService.ensureShortcodesRegistered(firstFile.content);
+              // 设置 markdown 内容
+              setMarkdown(firstFile.content);
+            } catch (error) {
+              console.error('Error processing shortcodes in file content:', error);
+              setMarkdown(firstFile.content);
+            }
+          };
+          
+          loadFileWithShortcodes();
         }
       }
     } else {
@@ -108,7 +123,21 @@ export default function IndexPage() {
             if (firstFile) {
               setSelectedFileId(firstFile.id);
               setSelectedFile(firstFile);
-              setMarkdown(firstFile.content);
+              
+              // 在设置 markdown 内容之前，确保所有 shortcode 都已注册
+              const loadFileWithShortcodes = async () => {
+                try {
+                  // 检查内容中的 shortcode 并确保它们已注册
+                  await shortcodeService.ensureShortcodesRegistered(firstFile.content);
+                  // 设置 markdown 内容
+                  setMarkdown(firstFile.content);
+                } catch (error) {
+                  console.error('Error processing shortcodes in file content:', error);
+                  setMarkdown(firstFile.content);
+                }
+              };
+              
+              loadFileWithShortcodes();
             }
           }
         }
@@ -130,8 +159,23 @@ export default function IndexPage() {
     if (file && !file.isDirectory) {
       setSelectedFileId(fileId);
       setSelectedFile(file);
-      setMarkdown(file.content);
-      setIsModified(false);
+      
+      // 在设置 markdown 内容之前，确保所有 shortcode 都已注册
+      const loadFileWithShortcodes = async () => {
+        try {
+          // 检查内容中的 shortcode 并确保它们已注册
+          await shortcodeService.ensureShortcodesRegistered(file.content);
+          // 设置 markdown 内容
+          setMarkdown(file.content);
+          setIsModified(false);
+        } catch (error) {
+          console.error('Error processing shortcodes in file content:', error);
+          setMarkdown(file.content);
+          setIsModified(false);
+        }
+      };
+      
+      loadFileWithShortcodes();
     }
   };
 
@@ -164,15 +208,17 @@ export default function IndexPage() {
         
         // 检查是否包含 shortcode 标签
         if (markdown.includes('{{<') && markdown.includes('>}}')) {
-          // 使用 @mdfriday/shortcode 包进行处理
+          // 确保所有 shortcode 都已注册
+          await shortcodeService.ensureShortcodesRegistered(markdown);
+          
           // Step 1: 替换 shortcodes 为占位符
-          const withPlaceholders = stepRender(markdown);
+          const withPlaceholders = shortcodeService.stepRender(markdown);
           
           // Step 2: 使用 marked 处理 markdown
           const htmlContent = await markedInstance.parse(withPlaceholders);
           
           // Step 3: 最终渲染，将占位符替换为渲染后的 shortcode 内容
-          parsedHTML = finalRender(htmlContent);
+          parsedHTML = shortcodeService.finalRender(htmlContent);
         } else {
           // 普通 markdown 内容，直接使用 marked 处理
           parsedHTML = await markedInstance.parse(markdown);
@@ -189,7 +235,7 @@ export default function IndexPage() {
     };
 
     parseMarkdown();
-  }, [markdown, articleStyle, stepRender, finalRender]);
+  }, [markdown, articleStyle]);
 
   const handleMarkdownChange = (newMarkdown: string) => {
     setMarkdown(newMarkdown);

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { ShortcodeItem, ShortcodeMetadata, ShortcodeSearchResult } from '../../types/shortcode.ts';
 import { shortcodeApiService } from '@/core/services/shortcodeApiService.ts';
+import { shortcodeService } from '@/core/services/shortcodeService.ts';
 import { Shortcode } from '@mdfriday/shortcode';
 import { createProject as projectServiceCreateProject } from '@/core/services/projectService.ts';
 import { Project, ProjectFile } from '../../components/project/ProjectExplorer.tsx';
@@ -12,8 +13,8 @@ const toast = {
   success: (message: string) => console.log(message)
 };
 
-// Initialize global shortcode instance - using the @mdfriday/shortcode package
-const globalShortcode = new Shortcode();
+// Get the global shortcode instance from our service
+const globalShortcode = shortcodeService.getInstance();
 
 // Define context types
 interface ProjectContextType {
@@ -184,24 +185,18 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
   const selectShortcode = (shortcode: ShortcodeItem) => {
     setSelectedShortcode(shortcode);
     
-    // Register shortcode with the @mdfriday/shortcode package
-    globalShortcode.registerShortcode({
-      id: parseInt(shortcode.id, 10),
-      name: shortcode.title,  // 使用 title 作为 shortcode 名称
-      template: shortcode.template,
-      uuid: shortcode.id,
-      tags: shortcode.tags
-    });
+    // Register shortcode using our service
+    shortcodeService.registerShortcode(shortcode);
   };
   
   // Step 1 of markdown rendering: replace shortcodes with placeholders
   const stepRender = (markdown: string): string => {
-    return globalShortcode.stepRender(markdown);
+    return shortcodeService.stepRender(markdown);
   };
   
   // Step 3 of markdown rendering: final rendering
   const finalRender = (html: string): string => {
-    return globalShortcode.finalRender(html);
+    return shortcodeService.finalRender(html);
   };
   
   /**
@@ -217,14 +212,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
         throw new Error('No shortcode selected');
       }
       
-      // 注册 shortcode - 使用 @mdfriday/shortcode 包
-      globalShortcode.registerShortcode({
-        id: parseInt(selectedShortcode.id, 10),
-        name: selectedShortcode.title,  // 使用 title 作为 shortcode 名称
-        template: selectedShortcode.template,
-        uuid: selectedShortcode.id,
-        tags: selectedShortcode.tags
-      });
+      // Register the primary shortcode using our service
+      shortcodeService.registerShortcode(selectedShortcode);
       
       // 处理 example 内容
       let exampleContent = selectedShortcode.example || `{{< ${selectedShortcode.title} >}}`;
@@ -241,6 +230,9 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
         }
       }
       
+      // Use our service to ensure all shortcodes in the example are registered
+      await shortcodeService.ensureShortcodesRegistered(exampleContent);
+      
       // 创建项目
       const timestamp = Date.now().toString();
       const newProject: Project = {
@@ -248,18 +240,18 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
         name: selectedShortcode.title,
         type: selectedShortcode.tags.includes('resume') ? 'resume' : 
               selectedShortcode.tags.includes('website') ? 'website' : 'xiaohongshu',
-        templateId: `shortcode-${selectedShortcode.id}`,
+        templateId: selectedShortcode.id,
         files: [
           {
             id: `file_${timestamp}`,
             name: 'index.md',
             content: exampleContent,
+            path: '/index.md',
             isDirectory: false,
-            path: '/index.md'
-          }
+          },
         ],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       
       // 将新项目直接保存到本地存储，不使用预定义模板

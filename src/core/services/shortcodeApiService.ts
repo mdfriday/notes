@@ -3,7 +3,8 @@
  */
 import { 
   API_ENDPOINTS, 
-  SHORTCODE_REQUEST_PARAMS 
+  SHORTCODE_REQUEST_PARAMS,
+  API_BASE_URL 
 } from '../../config/api.ts';
 import {
   ApiResponse,
@@ -332,5 +333,37 @@ export const shortcodeApiService = {
       uuid: shortcode.id,
       tags: shortcode.tags
     };
-  }
+  },
+
+  /**
+   * Fetch a shortcode by its name using the hash endpoint
+   * @param name The name of the shortcode to fetch
+   * @returns The shortcode item, or null if not found
+   */
+  async fetchShortcodeByName(name: string): Promise<ShortcodeItem | null> {
+    try {
+      console.log(`Fetching shortcode by name: ${name}`);
+      
+      // Build the endpoint URL - using the base URL since this endpoint isn't in API_ENDPOINTS
+      const endpoint = `${API_BASE_URL}/api/sc/hash?name=${encodeURIComponent(name)}`;
+      
+      // Make the API call with the correct response structure
+      const response = await api.get<{ data: ApiShortcodeItem[] }>(endpoint);
+      
+      // Validate the response based on the actual structure
+      if (!response || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
+        console.error('Invalid or empty response when fetching shortcode by name:', response);
+        return null;
+      }
+      
+      // The response has a data array with the shortcode information
+      const apiShortcode = response.data[0];
+      
+      // Map the API shortcode to our application's ShortcodeItem format
+      return mapApiShortcodeToShortcodeItem(apiShortcode);
+    } catch (error) {
+      console.error(`Error fetching shortcode by name '${name}':`, error);
+      return null;
+    }
+  },
 }; 

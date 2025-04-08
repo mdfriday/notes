@@ -14,7 +14,7 @@
     "@codemirror/lang-markdown": "^6.3.0",
     "@codemirror/state": "^6.4.1",
     "@codemirror/view": "^6.34.1",
-    "@mdfriday/shortcode": "^0.0.4",
+    "@mdfriday/shortcode": "^0.0.6",
     "@nextui-org/button": "2.0.38",
     "@nextui-org/card": "^2.0.34",
     "@nextui-org/code": "2.0.33",
