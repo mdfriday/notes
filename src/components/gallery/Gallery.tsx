@@ -4,10 +4,10 @@ import type { ImageItem } from '@/types/gallery';
 import ImageCard from './ImageCard';
 import ImageModal from './ImageModal';
 import MasonryGrid from './MasonryGrid';
-import SearchBar from './SearchBar';
 import TagFilter from './TagFilter';
 import { fetchImages, getAllTags } from '@/core/services/imageService';
 import { getGalleryThumbnailUrl } from '@/core/utils/imageUtils';
+import SearchInput from '../SearchInput';
 
 // Global image cache to persist between renders
 const globalImageCache = new Map<string, HTMLImageElement>();
@@ -262,29 +262,19 @@ const Gallery = () => {
     return images.slice(visibleStartIndex, visibleEndIndex + 1);
   }, [images, visibleStartIndex, visibleEndIndex]);
 
-  // Image click handler
-  const handleImageClick = useCallback((image: ImageItem) => {
-    setSelectedImage(image);
-    setModalOpen(true);
-  }, []);
-
-  // Modal close handler
-  const closeModal = useCallback(() => {
-    setModalOpen(false);
-  }, []);
-
-  // Handle search with debounce effect
+  // Handle search term changes
   const handleSearch = useCallback((term: string) => {
     setSearchTerm(term);
   }, []);
 
   // Handle tag selection
   const handleTagSelect = useCallback((tag: string) => {
-    setSelectedTags(prevTags => {
-      if (prevTags.includes(tag)) {
-        return prevTags.filter(t => t !== tag);
+    setSelectedTags(prev => {
+      if (prev.includes(tag)) {
+        return prev.filter(t => t !== tag);
+      } else {
+        return [...prev, tag];
       }
-      return [...prevTags, tag];
     });
   }, []);
 
@@ -314,93 +304,123 @@ const Gallery = () => {
   }
 
   return (
-    <div className="w-full" ref={galleryRef}>
-      {/* Search and filters */}
-      <div className="mb-8 space-y-4">
-        <SearchBar onSearch={handleSearch} initialSearchTerm={searchTerm} />
-
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <TagFilter
-            tags={allTags}
-            selectedTags={selectedTags}
-            onTagSelect={handleTagSelect}
+    <div 
+      ref={galleryRef}
+      className="w-full h-full flex flex-col"
+    >
+      {/* Header Section */}
+      <div className="flex flex-col items-center justify-center mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">
+          Image Gallery
+        </h1>
+        
+        {/* Centered search input */}
+        <div className="w-full max-w-xl mx-auto mb-6">
+          <SearchInput 
+            onSearch={handleSearch}
+            initialValue={searchTerm}
+            placeholder="Search images..."
+            autoFocus={false}
           />
-
-          {(searchTerm || selectedTags.length > 0) && (
-            <button
-              onClick={handleClearFilters}
-              className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-            >
-              Clear Filters
-            </button>
-          )}
         </div>
+        
+        {/* Tags displayed below search */}
+        {allTags.length > 0 && (
+          <div className="w-full max-w-2xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-2 mt-2">
+              {selectedTags.length > 0 && (
+                <button
+                  onClick={handleClearFilters}
+                  className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-800 rounded-full text-sm font-medium transition-colors"
+                >
+                  Clear Filters
+                </button>
+              )}
+              {allTags.map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagSelect(tag)}
+                  className={`
+                    px-3 py-1.5 rounded-full text-sm font-medium transition-colors
+                    ${selectedTags.includes(tag)
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }
+                  `}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Images grid - only render visible images */}
-      {images.length === 0 && !loading ? (
-        <div className="text-center py-10 bg-gray-50 rounded-lg">
-          <h3 className="text-lg font-medium text-gray-600">No images found</h3>
-          <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
-        </div>
-      ) : (
-        <div className="min-h-[50vh] relative will-change-transform">
-          {/* Empty placeholders for scrollbar height */}
-          {visibleStartIndex > 0 && (
-            <div 
-              style={{ 
-                height: `${visibleStartIndex * 300}px`, // Approximate height per row
-                width: '100%'
-              }} 
-              aria-hidden="true"
-            />
-          )}
-          
+      
+      {/* Main Gallery */}
+      <div className="w-full flex-grow">
+        {loading && images.length === 0 ? (
+          // Loading state
+          <div className="w-full h-64 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-800 dark:border-gray-200"></div>
+          </div>
+        ) : error ? (
+          // Error state
+          <div className="w-full p-8 text-center">
+            <p className="text-red-500">{error}</p>
+            <button 
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </button>
+          </div>
+        ) : images.length === 0 ? (
+          // Empty state
+          <div className="w-full p-8 text-center">
+            <p className="text-gray-500 dark:text-gray-400">No images found. Try adjusting your search criteria.</p>
+          </div>
+        ) : (
+          // Gallery grid with optimized rendering
           <MasonryGrid>
-            {visibleImages.map((image) => (
-              <div 
-                key={image.id}
-                ref={(ref) => setImageRef(image.id, ref)}
-              >
-                <ImageCard 
-                  image={image} 
-                  onClick={handleImageClick}
-                  prefetched={globalImageCache.has(getGalleryThumbnailUrl(image.id, image.width, image.height))}
-                />
-              </div>
+            {images.map((image, index) => (
+              // Only render images within the visible range
+              (index >= visibleStartIndex && index <= visibleEndIndex) && (
+                <div 
+                  key={image.id}
+                  ref={(element) => element && setImageRef(image.id, element)}
+                >
+                  <ImageCard 
+                    image={image}
+                    onClick={(img) => {
+                      setSelectedImage(img);
+                      setModalOpen(true);
+                    }}
+                    prefetched={index < 12} // Pre-fetch first batch
+                  />
+                </div>
+              )
             ))}
           </MasonryGrid>
-          
-          {/* Empty placeholder for bottom space */}
-          {visibleEndIndex < images.length - 1 && (
-            <div 
-              style={{ 
-                height: `${(images.length - visibleEndIndex - 1) * 300}px`,
-                width: '100%'
-              }} 
-              aria-hidden="true"
-            />
-          )}
-        </div>
-      )}
-
-      {/* Loading indicator */}
-      {(loading || hasMore) && (
-        <div 
-          ref={loadingRef} 
-          className="w-full flex justify-center py-8"
-        >
-          {loading && (
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-          )}
-        </div>
-      )}
-
-      {/* Image modal */}
-      <ImageModal
+        )}
+        
+        {/* Infinite scroll loading indicator */}
+        {!initialLoading && hasMore && (
+          <div 
+            ref={loadingRef} 
+            className="w-full flex justify-center py-8"
+          >
+            {loading && (
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 dark:border-gray-300"></div>
+            )}
+          </div>
+        )}
+      </div>
+      
+      {/* Image modal for full-size view */}
+      <ImageModal 
         image={selectedImage}
         isOpen={modalOpen}
-        onClose={closeModal}
+        onClose={() => setModalOpen(false)}
       />
     </div>
   );

@@ -12,6 +12,7 @@ import {
 import { Project } from "@/components/project/ProjectExplorer";
 import { useTranslation } from "react-i18next";
 import CreateProjectModal from "@/components/project/CreateProjectModal";
+import ModalLayout from "@/components/ui/ModalLayout";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -281,21 +282,14 @@ export default function Sidebar({ isOpen, onToggle, onProjectSelect }: SidebarPr
         onProjectCreated={handleProjectCreated}
       />
 
-      {/* Gallery modal */}
-      <Modal
+      {/* Gallery modal - 直接使用 Gallery 组件，它已经包含了所有所需的UI元素 */}
+      <ModalLayout
         isOpen={isGalleryModalOpen}
         onClose={() => setIsGalleryModalOpen(false)}
-        size="4xl"
+        title="素材库"
       >
-        <ModalContent>
-          <ModalHeader>
-            <h3 className="text-lg font-semibold">素材库</h3>
-          </ModalHeader>
-          <ModalBody>
-            <Gallery />
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+        <Gallery />
+      </ModalLayout>
     </>
   );
 } 

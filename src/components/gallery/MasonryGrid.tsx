@@ -4,6 +4,8 @@ interface MasonryGridProps {
   children: ReactNode[];
   columnCount?: { mobile: number; tablet: number; desktop: number };
   gap?: string;
+  autoLayout?: boolean;
+  minItemWidth?: number;
 }
 
 const defaultColumnCount = {
@@ -16,6 +18,8 @@ const MasonryGrid = memo(({
   children,
   columnCount = defaultColumnCount,
   gap = '1rem',
+  autoLayout = true,
+  minItemWidth = 200,
 }: MasonryGridProps) => {
   const [columns, setColumns] = useState(columnCount.desktop);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -23,19 +27,19 @@ const MasonryGrid = memo(({
   const layoutTimeoutRef = useRef<number | null>(null);
   const [isLayouting, setIsLayouting] = useState(false);
 
-  // More efficient resize handling with ResizeObserver
   useEffect(() => {
-    // Modern approach using ResizeObserver instead of window resize event
+    if (autoLayout) {
+      return;
+    }
+
     if (typeof ResizeObserver !== 'undefined') {
       const handleResize = (entries: ResizeObserverEntry[]) => {
         if (!entries.length) return;
         
-        // Clear any pending layout operations
         if (layoutTimeoutRef.current) {
           window.clearTimeout(layoutTimeoutRef.current);
         }
         
-        // Debounce layout recalculation to avoid thrashing
         layoutTimeoutRef.current = window.setTimeout(() => {
           const width = entries[0].contentRect.width;
           setIsLayouting(true);
@@ -48,7 +52,6 @@ const MasonryGrid = memo(({
             setColumns(columnCount.desktop);
           }
           
-          // Signal that layout is complete
           layoutTimeoutRef.current = window.setTimeout(() => {
             setIsLayouting(false);
           }, 50);
@@ -70,7 +73,6 @@ const MasonryGrid = memo(({
         }
       };
     } else {
-      // Fallback for browsers without ResizeObserver
       const updateColumns = () => {
         const width = window.innerWidth;
         
@@ -83,10 +85,8 @@ const MasonryGrid = memo(({
         }
       };
 
-      // Initial setup
       updateColumns();
 
-      // Debounce resize handler
       let resizeTimer: number;
       const handleResize = () => {
         clearTimeout(resizeTimer);
@@ -97,36 +97,53 @@ const MasonryGrid = memo(({
         }, 100);
       };
 
-      // Add resize listener
       window.addEventListener('resize', handleResize);
 
-      // Cleanup
       return () => {
         window.removeEventListener('resize', handleResize);
         clearTimeout(resizeTimer);
       };
     }
-  }, [columnCount]);
+  }, [columnCount, autoLayout]);
 
-  // Distribute children into columns - memoized for performance
   const columnList = useMemo(() => {
+    if (autoLayout) {
+      return [children];
+    }
+
     if (!children || children.length === 0) return Array(columns).fill([]);
 
     const cols: ReactNode[][] = Array(columns)
       .fill(null)
       .map(() => []);
 
-    // Distribute items among columns by index
     children.forEach((child, index) => {
       const columnIndex = index % columns;
       cols[columnIndex].push(child);
     });
 
     return cols;
-  }, [children, columns]);
+  }, [children, columns, autoLayout]);
 
-  // Apply a CSS class based on layout state
   const layoutClass = isLayouting ? 'masonry-grid-layouting' : '';
+
+  if (autoLayout) {
+    return (
+      <div
+        ref={gridRef}
+        className={`w-full ${layoutClass}`}
+        style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(auto-fill, minmax(${minItemWidth}px, max-content))`,
+          gap,
+          justifyContent: 'center',
+          contain: 'paint layout style',
+        }}
+      >
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -154,7 +171,6 @@ const MasonryGrid = memo(({
           }}
         >
           {column.map((item: ReactNode, itemIndex: number) => {
-            // Use a more stable key based on both column and item index
             const key = `item-${columnIndex}-${itemIndex}`;
             return (
               <div 
@@ -177,7 +193,6 @@ const MasonryGrid = memo(({
   );
 });
 
-// Add display name for debugging
 MasonryGrid.displayName = 'MasonryGrid';
 
 export default MasonryGrid; 

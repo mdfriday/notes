@@ -57,21 +57,86 @@ function flattenTagsArray(tagsArray: string[][]): string[] {
 }
 
 /**
+ * Constructs search query for API from search term and tags
+ */
+function buildSearchQuery(searchTerm: string, selectedTags: string[]): string {
+  const parts: string[] = [];
+  
+  // Add search term for multiple fields if exists
+  if (searchTerm.trim()) {
+    // Search across multiple fields with OR condition
+    const searchTermTrimmed = searchTerm.trim();
+    const searchFields = [
+      `name:${searchTermTrimmed}`,
+      `slug:${searchTermTrimmed}`,
+      `tags:${searchTermTrimmed}`
+    ];
+    
+    // Add the field searches WITHOUT wrapping in parentheses for simple queries
+    parts.push(searchFields.join(' OR '));
+    console.log('Added search term conditions:', searchFields.join(' OR '));
+  }
+  
+  // Add tags filter
+  if (selectedTags.length > 0) {
+    // Format: "tags:Tag1 OR tags:Tag2 OR tags:Tag3"
+    const tagsQuery = selectedTags
+      .map(tag => `tags:${tag}`)
+      .join(' OR ');
+    
+    // No parentheses for simple tag filters
+    parts.push(tagsQuery);
+    console.log('Added tag filter conditions:', tagsQuery);
+  }
+  
+  // Join with AND if we have multiple parts to ensure both search term and tags are matched
+  let finalQuery = '';
+  if (parts.length > 1) {
+    // For complex queries with multiple conditions, use parentheses for proper grouping
+    finalQuery = parts.map(part => `(${part})`).join(' AND ');
+  } else {
+    // For simple queries, no parentheses needed
+    finalQuery = parts[0] || '';
+  }
+  
+  console.log('Final constructed query:', finalQuery);
+  
+  // Return the raw query without any URL encoding - the api utility will handle proper encoding
+  return finalQuery;
+}
+
+/**
  * Shortcode API service for fetching shortcodes and tags from the backend
  */
 export const shortcodeApiService = {
   /**
-   * Fetch shortcodes with pagination
+   * Fetch shortcodes with pagination and tag filtering
    */
   async fetchShortcodes(
     page = 1,
     limit = SHORTCODE_REQUEST_PARAMS.count,
+    selectedTags: string[] = [],
+    searchTerm = ''
+  ): Promise<ShortcodeSearchResult> {
+    return this.searchShortcodes(page, limit, searchTerm, selectedTags);
+  },
+  
+  /**
+   * Search shortcodes with pagination, text search and tag filtering
+   */
+  async searchShortcodes(
+    page = 1,
+    limit = SHORTCODE_REQUEST_PARAMS.count,
+    searchTerm = '',
     selectedTags: string[] = []
   ): Promise<ShortcodeSearchResult> {
     const offset = (page - 1) * limit;
     
     try {
-      console.log('Fetching shortcodes with:', { page, limit, selectedTags });
+      console.log('Searching shortcodes with:', { page, limit, searchTerm, selectedTags });
+      
+      // Determine if we have any filters (search term or tags)
+      const hasFilters = searchTerm.trim() !== '' || selectedTags.length > 0;
       
       let response: Record<string, any>;
       const params: Record<string, string | number> = {
@@ -81,23 +146,32 @@ export const shortcodeApiService = {
         order: SHORTCODE_REQUEST_PARAMS.order,
       };
       
-      // Determine if we should use search or regular endpoint
-      if (selectedTags.length > 0) {
-        // Build search query for tags
-        const searchQuery = buildShortcodeTagsQuery(selectedTags);
+      if (hasFilters) {
+        // Build search query that combines searchTerm and tags
+        const searchQuery = buildSearchQuery(searchTerm, selectedTags);
         
-        const searchParams = {
-          ...params,
-          q: searchQuery,
-        };
-        
-        console.log('Search query for tags:', searchQuery);
-        console.log('Search params:', searchParams);
-        
-        response = await api.get<ApiResponse<ApiShortcodeItem[]>>(
-          API_ENDPOINTS.SHORTCODE_SEARCH,
-          { params: searchParams }
-        );
+        // Only add query param if we have a valid query
+        if (searchQuery) {
+          const searchParams = {
+            ...params,
+            q: searchQuery,
+          };
+          
+          console.log('Search query:', searchQuery);
+          console.log('Search params:', searchParams);
+          
+          response = await api.get<ApiResponse<ApiShortcodeItem[]>>(
+            API_ENDPOINTS.SHORTCODE_SEARCH,
+            { params: searchParams }
+          );
+        } else {
+          // Fallback to regular endpoint if query is empty
+          console.log('Empty search query, using regular endpoint');
+          response = await api.get<ApiResponse<ApiShortcodeItem[]>>(
+            API_ENDPOINTS.SHORTCODES,
+            { params }
+          );
+        }
       } else {
         // Use regular shortcodes endpoint
         response = await api.get<ApiResponse<ApiShortcodeItem[]>>(
@@ -132,7 +206,7 @@ export const shortcodeApiService = {
       
       return { shortcodes, hasMore };
     } catch (error) {
-      console.error('Error fetching shortcodes:', error);
+      console.error('Error searching shortcodes:', error);
       return { shortcodes: [], hasMore: false };
     }
   },

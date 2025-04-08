@@ -1,7 +1,7 @@
 import { API_BASE_URL } from '../../config/api.ts';
 
 interface ThumbnailOptions {
-  id?: number;
+  id?: string;
   width?: number;
   height?: number;
   maxWidth?: number;
@@ -59,6 +59,25 @@ export function calculateProportionalDimensions(
 }
 
 /**
+ * Calculate optimal dimensions for modal display
+ * Takes into account available viewport size and leaves 5% margin on all sides
+ */
+export function calculateModalDimensions(
+  viewportWidth: number,
+  viewportHeight: number
+): { width: number; height: number } {
+  // Calculate available space with exactly 5% margin on each side
+  const margin = 0.05; // 5% margin
+  const availableWidth = viewportWidth * (1 - 2 * margin);
+  const availableHeight = viewportHeight * (1 - 2 * margin);
+  
+  return {
+    width: Math.round(availableWidth),
+    height: Math.round(availableHeight)
+  };
+}
+
+/**
  * Generate a thumbnail URL for an image
  */
 export function getThumbnailUrl(
@@ -72,7 +91,7 @@ export function getThumbnailUrl(
   let height = options.height;
   
   // If we need to maintain aspect ratio and width/height aren't explicitly set
-  if (maintainAspectRatio && (!width || !height)) {
+  if (maintainAspectRatio && (width && height)) {
     const dimensions = calculateProportionalDimensions(
       originalWidth,
       originalHeight,
@@ -93,17 +112,18 @@ export function getThumbnailUrl(
 
 /**
  * Generate a thumbnail URL for gallery view with optimal dimensions
+ * Uses actual image dimensions instead of fixed values
  */
 export function getGalleryThumbnailUrl(
-    id: number,
+  id: string,
   originalWidth: number, 
   originalHeight: number
 ): string {
-  // For gallery view, we want smaller thumbnails for better performance
+  // For gallery thumbnails, use actual image dimensions to maintain clarity
   return getThumbnailUrl(originalWidth, originalHeight, {
     id,
-    maxWidth: 200,  // Limit max width for gallery
-    maxHeight: 300, // Allow taller images for masonry layout
+    width: originalWidth,
+    height: originalHeight,
     maintainAspectRatio: true
   });
 } 

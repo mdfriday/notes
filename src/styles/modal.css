@@ -1,0 +1,101 @@
+/* 
+ * Modal styles 
+ * 包含模态框相关的通用样式
+ */
+
+/* 隐藏滚动条但保留功能 */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* 模态框内容容器 */
+.modal-content-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 模态框主体内容 */
+.modal-body-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+/* 模态框标签区域 */
+.modal-tags-container {
+  display: flex;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(229, 231, 235, 1);
+}
+
+/* 模态框搜索区域 */
+.modal-search-container {
+  margin-bottom: 1rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+/* 优化图像卡片 */
+.optimized-card {
+  transition: all 0.2s ease-in-out;
+  contain: content;
+}
+
+.optimized-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.optimized-card-image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.optimized-card-image {
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+/* 图像加载状态 */
+.optimized-card-loading {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(243, 244, 246, 1);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 瀑布流布局样式 */
+.masonry-grid-layouting > div {
+  animation: masonry-fade 0.25s ease-in-out;
+}
+
+@keyframes masonry-fade {
+  0% {
+    opacity: 0.5;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+} 

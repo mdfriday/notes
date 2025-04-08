@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { ShortcodeItem, ShortcodeMetadata, ShortcodeSearchResult } from '../../types/shortcode.ts';
 import { shortcodeApiService } from '@/core/services/shortcodeApiService.ts';
 import { Shortcode } from '@mdfriday/shortcode';
@@ -19,7 +19,8 @@ const globalShortcode = new Shortcode();
 interface ProjectContextType {
   isCreatingProject: boolean;
   shortcodeTags: string[];
-  selectedTag: string;
+  selectedTags: string[];
+  searchTerm: string;
   shortcodes: ShortcodeItem[];
   hasMoreShortcodes: boolean;
   isLoadingShortcodes: boolean;
@@ -32,6 +33,8 @@ interface ProjectContextType {
   loadMoreShortcodes: () => void;
   selectShortcode: (shortcode: ShortcodeItem) => void;
   createProjectFromShortcode: (selectedShortcode: ShortcodeItem) => Promise<Project | null>;
+  setSearchTerm: (term: string) => void;
+  clearFilters: () => void;
   
   // Markdown rendering functions
   stepRender: (markdown: string) => string;
@@ -42,7 +45,8 @@ interface ProjectContextType {
 const ProjectContext = createContext<ProjectContextType>({
   isCreatingProject: false,
   shortcodeTags: [],
-  selectedTag: '',
+  selectedTags: [],
+  searchTerm: '',
   shortcodes: [],
   hasMoreShortcodes: false,
   isLoadingShortcodes: false,
@@ -55,6 +59,8 @@ const ProjectContext = createContext<ProjectContextType>({
   loadMoreShortcodes: () => {},
   selectShortcode: () => {},
   createProjectFromShortcode: async () => null,
+  setSearchTerm: () => {},
+  clearFilters: () => {},
   
   // Markdown rendering functions - use the @mdfriday/shortcode package methods
   stepRender: (markdown) => markdown,
@@ -88,7 +94,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
   
   // State for shortcode tags
   const [shortcodeTags, setShortcodeTags] = useState<string[]>([]);
-  const [selectedTag, setSelectedTag] = useState<string>('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   
   // State for shortcodes
   const [shortcodes, setShortcodes] = useState<ShortcodeItem[]>([]);
@@ -104,39 +111,37 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     loadTags();
   }, []);
   
-  // Load shortcodes when selectedTag changes
+  // Load shortcodes when search term or selected tags change
   useEffect(() => {
-    if (selectedTag) {
-      loadShortcodes(1);
-    }
-  }, [selectedTag]);
+    loadShortcodes(1);
+  }, [searchTerm, selectedTags]);
   
   // Load all shortcode tags
   const loadTags = async () => {
     try {
       const tags = await shortcodeApiService.fetchAllTags();
       setShortcodeTags(tags);
-      
-      // Select the first tag if available
-      if (tags.length > 0 && !selectedTag) {
-        setSelectedTag(tags[0]);
-      }
     } catch (error) {
       console.error('Error loading shortcode tags:', error);
     }
   };
   
-  // Load shortcodes for the selected tag
+  // Clear all filters
+  const clearFilters = useCallback(() => {
+    setSearchTerm('');
+    setSelectedTags([]);
+  }, []);
+  
+  // Load shortcodes with search term and selected tags
   const loadShortcodes = async (page: number) => {
-    if (!selectedTag) return;
-    
     setIsLoadingShortcodes(true);
     
     try {
-      const result = await shortcodeApiService.fetchShortcodes(
+      const result = await shortcodeApiService.searchShortcodes(
         page,
         10,
-        [selectedTag]
+        searchTerm,
+        selectedTags
       );
       
       if (page === 1) {
@@ -156,11 +161,16 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     }
   };
   
-  // Select a tag and load its shortcodes
+  // Select a tag (toggle selection)
   const selectTag = (tag: string) => {
-    setSelectedTag(tag);
-    // Reset selected shortcode
-    setSelectedShortcode(null);
+    setSelectedTags(prev => {
+      // If tag is already selected, remove it
+      if (prev.includes(tag)) {
+        return prev.filter(t => t !== tag);
+      }
+      // Otherwise add it
+      return [...prev, tag];
+    });
   };
   
   // Load more shortcodes (pagination)
@@ -283,7 +293,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
   const value: ProjectContextType = {
     isCreatingProject,
     shortcodeTags,
-    selectedTag,
+    selectedTags,
+    searchTerm,
     shortcodes,
     hasMoreShortcodes,
     isLoadingShortcodes,
@@ -295,6 +306,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     loadMoreShortcodes,
     selectShortcode,
     createProjectFromShortcode,
+    setSearchTerm,
+    clearFilters,
     
     stepRender,
     finalRender,

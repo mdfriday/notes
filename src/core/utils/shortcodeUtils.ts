@@ -72,7 +72,43 @@ export function getThumbnailUrl({
   );
 
   // Return thumbnail URL in the format specified by the API
-  return `${API_BASE_URL}/image/id/${id}/${thumbWidth}/${thumbHeight}`;
+  return `${API_BASE_URL}/${cleanAssetUrl}`;
+}
+
+/**
+ * Generate a clearer thumbnail URL for shortcodes that preserves actual dimensions
+ * Similar to getGalleryThumbnailUrl in imageUtils.ts
+ * 
+ * Unlike image thumbnails, shortcode thumbnails display the original image
+ * but calculate a proportional display area for the UI
+ * 
+ * @returns {Object} An object containing the original URL and calculated display dimensions
+ */
+export function getShortcodeThumbnailUrl(
+  id: string,
+  assetUrl: string,
+  originalWidth: number,
+  originalHeight: number,
+  maxWidth: number = 300,
+  maxHeight: number = 200
+): { url: string; displayWidth: number; displayHeight: number } {
+  // Get the full asset URL
+  const url = getFullAssetUrl(assetUrl);
+  
+  // Calculate proportional dimensions that maintain aspect ratio for display purposes
+  const { width: displayWidth, height: displayHeight } = calculateProportionalDimensions(
+    originalWidth,
+    originalHeight,
+    maxWidth,
+    maxHeight
+  );
+  
+  // Return both the original URL and the calculated display dimensions
+  return {
+    url,
+    displayWidth,
+    displayHeight
+  };
 }
 
 /**

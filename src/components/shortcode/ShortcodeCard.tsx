@@ -1,41 +1,41 @@
-import type { ImageItem } from '@/types/gallery';
 import { memo, useState, useEffect, useRef } from 'react';
-import { getGalleryThumbnailUrl } from '@/core/utils/imageUtils';
-import { Image as DomainImage } from '@/core/domain/Image';
+import type { ShortcodeItem } from '@/types/shortcode';
+import { getShortcodeThumbnailUrl } from '@/core/utils/shortcodeUtils';
+import '@/styles/modal.css';
 
-interface ImageCardProps {
-  image: ImageItem;
-  onClick: (image: ImageItem) => void;
+interface ShortcodeCardProps {
+  shortcode: ShortcodeItem;
+  isSelected: boolean;
+  onClick: (shortcode: ShortcodeItem) => void;
   prefetched?: boolean;
 }
 
-const ImageCard = ({ image, onClick, prefetched = false }: ImageCardProps) => {
-  const { id, title, description, tags, width, height } = image;
-  // Create domain model from image item
-  const imageModel = new DomainImage(image);
+const ShortcodeCard = ({ 
+  shortcode, 
+  isSelected, 
+  onClick, 
+  prefetched = false 
+}: ShortcodeCardProps) => {
+  const { id, title, description, tags, asset, width, height } = shortcode;
   
-  // Use thumbnail URL that maintains the actual dimensions
-  const thumbnailUrl = getGalleryThumbnailUrl(id, width, height);
-  const [isLoaded, setIsLoaded] = useState(prefetched); // If prefetched, consider it loaded
+  // Get the thumbnail display information using our utility function
+  const thumbnailInfo = getShortcodeThumbnailUrl(
+    id, 
+    asset, 
+    width, 
+    height,
+    300, // Max card width
+    200  // Max card height
+  );
+  
+  const [isLoaded, setIsLoaded] = useState(prefetched);
   const [isVisible, setIsVisible] = useState(false);
-  const [thumbnailDimensions, setThumbnailDimensions] = useState({ width: 0, height: 0 });
   const cardRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   
-  // Extract thumbnail dimensions from URL
-  useEffect(() => {
-    // 解析URL中的宽高信息，格式：http://127.0.0.1:1314/image/id/5/200/136
-    const match = thumbnailUrl.match(/\/(\d+)\/(\d+)$/);
-    if (match) {
-      const thumbWidth = parseInt(match[1], 10);
-      const thumbHeight = parseInt(match[2], 10);
-      setThumbnailDimensions({ width: thumbWidth, height: thumbHeight });
-    }
-  }, [thumbnailUrl]);
-  
   // Handle click with a small performance optimization
   const handleClick = () => {
-    onClick(image);
+    onClick(shortcode);
   };
 
   // Handle image load event
@@ -53,26 +53,23 @@ const ImageCard = ({ image, onClick, prefetched = false }: ImageCardProps) => {
     
     // If the card is visible and image isn't loaded yet, load it
     if (isVisible && !isLoaded && imageRef.current) {
-      // Use native loading attribute for better browser optimization
-      imageRef.current.loading = 'eager';
-      
       // Create a persistent image to avoid GC during scrolling
       const imgElement = new window.Image();
       imgElement.crossOrigin = "anonymous";
       imgElement.onload = handleImageLoad;
       imgElement.onerror = () => {
-        console.error(`Failed to load image: ${thumbnailUrl}`);
+        console.error(`Failed to load image: ${thumbnailInfo.url}`);
       };
-      imgElement.src = thumbnailUrl;
+      imgElement.src = thumbnailInfo.url;
       
       return () => {
         imgElement.onload = null;
         imgElement.onerror = null;
       };
     }
-  }, [thumbnailUrl, isVisible, isLoaded, prefetched]);
+  }, [thumbnailInfo.url, isVisible, isLoaded, prefetched]);
   
-  // Use Intersection Observer to track visibility more efficiently
+  // Use Intersection Observer to track visibility for efficient loading
   useEffect(() => {
     // Skip visibility detection if already prefetched and loaded
     if (prefetched) {
@@ -105,50 +102,55 @@ const ImageCard = ({ image, onClick, prefetched = false }: ImageCardProps) => {
     };
   }, [prefetched]);
 
-  // 卡片的padding值，给图片周围留出空间
+  // The card padding value
   const cardPadding = 16; // 8px on each side
   
   return (
     <div 
       ref={cardRef}
-      className="relative group overflow-hidden rounded-lg shadow-md bg-white mb-4 transition-transform hover:shadow-xl hover:-translate-y-1 cursor-pointer" 
+      className={`relative group overflow-hidden rounded-lg shadow-md bg-white transition-all hover:shadow-xl hover:-translate-y-1 cursor-pointer optimized-card ${
+        isSelected ? 'ring-2 ring-blue-500 border-blue-500' : 'border border-gray-200'
+      }`}
       onClick={handleClick}
       style={{ 
-        // 设置卡片的固定宽度为缩略图宽度加上padding
-        width: thumbnailDimensions.width > 0 
-          ? thumbnailDimensions.width + (cardPadding * 2) 
+        // Set the card's fixed width to the thumbnail width plus padding
+        width: thumbnailInfo.displayWidth > 0 
+          ? thumbnailInfo.displayWidth + (cardPadding * 2) 
           : 'auto'
       }}
     >
-      {/* 图片容器 - 使用固定高度而不是按比例填充 */}
+      {/* Image container with fixed height */}
       <div 
-        className="relative overflow-hidden" 
+        className="relative overflow-hidden optimized-card-image-container" 
         style={{ 
-          height: thumbnailDimensions.height > 0 
-            ? thumbnailDimensions.height + cardPadding
+          height: thumbnailInfo.displayHeight > 0 
+            ? thumbnailInfo.displayHeight + cardPadding
             : 0,
           padding: cardPadding / 2
         }}
       >
         {!isLoaded && (
-          <div className="absolute inset-0 bg-gray-100 animate-pulse"></div>
+          <div className="absolute inset-0 bg-gray-100 animate-pulse optimized-card-loading"></div>
         )}
         
-        {/* 图片本身 - 使用原始尺寸 */}
+        {/* The image itself - use original dimensions */}
         {(isVisible || prefetched) && (
           <img
             ref={imageRef}
-            src={thumbnailUrl}
+            src={thumbnailInfo.url}
             alt={title}
-            className={`transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+            className={`transition-opacity duration-300 optimized-card-image ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
             loading={prefetched ? 'eager' : 'lazy'}
             decoding="async"
             onLoad={handleImageLoad}
-            width={thumbnailDimensions.width}
-            height={thumbnailDimensions.height}
+            width={thumbnailInfo.displayWidth}
+            height={thumbnailInfo.displayHeight}
             style={{ 
               display: 'block',
-              margin: '0 auto'
+              margin: '0 auto',
+              objectFit: 'contain',
+              maxWidth: '100%',
+              maxHeight: '100%'
             }}
           />
         )}
@@ -167,7 +169,7 @@ const ImageCard = ({ image, onClick, prefetched = false }: ImageCardProps) => {
             <p className="text-gray-200 text-sm mt-1 line-clamp-2">{description}</p>
           )}
           
-          {/* Tags */}
+          {/* Tags - only show a few */}
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
               {tags.slice(0, 3).map((tag) => (
@@ -186,12 +188,9 @@ const ImageCard = ({ image, onClick, prefetched = false }: ImageCardProps) => {
             </div>
           )}
           
-          {/* Display thumbnail dimensions instead of original */}
+          {/* Display dimensions */}
           <div className="mt-2 text-xs text-gray-200">
-            {thumbnailDimensions.width > 0 
-              ? `${thumbnailDimensions.width} × ${thumbnailDimensions.height}` 
-              : `${width} × ${height}`
-            }
+            {width} × {height}
           </div>
         </div>
       )}
@@ -200,4 +199,4 @@ const ImageCard = ({ image, onClick, prefetched = false }: ImageCardProps) => {
 };
 
 // Add memoization to prevent unnecessary re-renders
-export default memo(ImageCard); 
+export default memo(ShortcodeCard); 

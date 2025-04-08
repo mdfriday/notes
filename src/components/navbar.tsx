@@ -25,26 +25,20 @@ import {
 } from "@/components/icons";
 import { Logo } from "@/components/icons";
 import LangButton from "@/components/lang-button.tsx";
+import SearchInput from './SearchInput';
+
+// Define proper types for nav items
+interface NavItem {
+  label: string;
+  href: string;
+}
 
 export const Navbar = () => {
   const searchInput = (
-    <Input
-      aria-label="Search"
-      classNames={{
-        inputWrapper: "bg-default-100",
-        input: "text-sm",
-      }}
-      endContent={
-        <Kbd className="hidden lg:inline-block" keys={["command"]}>
-          K
-        </Kbd>
-      }
-      labelPlacement="outside"
+    <SearchInput 
+      showKeyboardShortcut={true}
+      className="w-full"
       placeholder="Search..."
-      startContent={
-        <SearchIcon className="text-base text-default-400 pointer-events-none flex-shrink-0" />
-      }
-      type="search"
     />
   );
 
@@ -62,7 +56,7 @@ export const Navbar = () => {
           </Link>
         </NavbarBrand>
         <div className="hidden lg:flex gap-4 justify-start ml-2">
-          {siteConfig.navItems.map((item) => (
+          {siteConfig.navItems.map((item: NavItem) => (
             <NavbarItem key={item.href}>
               <Link
                 className={clsx(
@@ -123,8 +117,8 @@ export const Navbar = () => {
       <NavbarMenu>
         {searchInput}
         <div className="mx-4 mt-2 flex flex-col gap-2">
-          {siteConfig.navMenuItems.map((item, index) => (
-            <NavbarMenuItem key={`${item}-${index}`}>
+          {siteConfig.navMenuItems.map((item: NavItem, index) => (
+            <NavbarMenuItem key={`${item.label}-${index}`}>
               <Link
                 color={
                   index === 2
@@ -133,7 +127,7 @@ export const Navbar = () => {
                       ? "danger"
                       : "foreground"
                 }
-                href="#"
+                href={item.href}
                 size="lg"
               >
                 {item.label}

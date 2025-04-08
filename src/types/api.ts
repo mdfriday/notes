@@ -39,6 +39,7 @@ export interface ApiShortcodeItem {
   template: string;
   example: string;
   asset: string;
+  asset_id: number;
   tags: string[];
   width: number;
   height: number;
