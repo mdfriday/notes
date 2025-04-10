@@ -26,8 +26,8 @@ const StyleSettingPopover = () => {
         shouldBlockScroll={true}
       >
         <PopoverTrigger>
-          <Button className="h-[56px] w-full">
-            <Palette size={20} />
+          <Button className="h-[40px] w-full">
+            <Palette size={18} />
             {t(`customize.buttonName`)}
           </Button>
         </PopoverTrigger>

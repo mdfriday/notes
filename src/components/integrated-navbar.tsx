@@ -1,6 +1,12 @@
-import { Button } from "@nextui-org/button";
+import { Button, ButtonGroup } from "@nextui-org/button";
 import { Link } from "@nextui-org/link";
 import { Select, SelectItem } from "@nextui-org/select";
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+} from "@nextui-org/dropdown";
 import {
   Navbar as NextUINavbar,
   NavbarBrand,
@@ -10,9 +16,10 @@ import {
 import { useTranslation } from "react-i18next";
 import { link as linkStyles } from "@nextui-org/theme";
 import clsx from "clsx";
+import { Palette } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
-import { Logo } from "@/components/icons";
+import { Logo, ChevronDownIcon } from "@/components/icons";
 import LangButton from "@/components/lang-button.tsx";
 import StyleSettingPopover from "@/components/toolbar/style-setting-popover.tsx";
 import CopyButtonGroup from "@/components/toolbar/copy-button-group.tsx";
@@ -65,7 +72,7 @@ export const IntegratedNavbar: React.FC<IntegratedNavbarProps> = ({ markdown }) 
         </NavbarBrand>
 
         <div className="flex gap-2 justify-start items-center">
-          {siteConfig.navItems.map((item) => (
+          {siteConfig.navItems && siteConfig.navItems.length > 0 && siteConfig.navItems.map((item: {href: string, label: string}) => (
             <NavbarItem key={item.href}>
               <Link
                 className={clsx(
@@ -126,21 +133,38 @@ export const IntegratedNavbar: React.FC<IntegratedNavbarProps> = ({ markdown }) 
         className="gap-2"
       >
 
-        <Select
-            className="max-w-[200px]"
-            size="sm"
-            disallowEmptySelection={true}
-            aria-label={t("toolbar.selectStyleText")}
-            labelPlacement="outside-left"
-            selectedKeys={[selectedStyle]}
-            onChange={(e) => setSelectedStyle(e.target.value)}
-        >
-          {markdownStyles.map((style) => (
-              <SelectItem key={style.name} value={style.name}>
-                {t(`postStyle.${style.name}`)}
-              </SelectItem>
-          ))}
-        </Select>
+        <NavbarItem>
+          <ButtonGroup className="w-full" variant="flat">
+            <Button className="h-[40px] w-full" onClick={() => {}}>
+              <Palette size={18} />
+              {t(`postStyle.${selectedStyle}`)}
+            </Button>
+            <Dropdown placement="bottom-end">
+              <DropdownTrigger>
+                <Button isIconOnly className="h-[40px]">
+                  <ChevronDownIcon />
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                disallowEmptySelection
+                aria-label={t("toolbar.selectStyleText")}
+                className="max-w-[300px]"
+                selectedKeys={[selectedStyle]}
+                selectionMode="single"
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0] as string;
+                  setSelectedStyle(selected);
+                }}
+              >
+                {markdownStyles.map((style) => (
+                  <DropdownItem key={style.name}>
+                    {t(`postStyle.${style.name}`)}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
+          </ButtonGroup>
+        </NavbarItem>
 
         <NavbarItem>
           <StyleSettingPopover />

@@ -100,13 +100,13 @@ export default function CopyButtonGroup() {
 
   return (
     <ButtonGroup className="w-full" variant="flat">
-      <Button className="h-[56px] w-full" onClick={handleCopyButtonClick}>
-        <Copy size={20} />
+      <Button className="h-[40px] w-full" onClick={handleCopyButtonClick}>
+        <Copy size={18} />
         {labelsMap[selectedOptionValue]}
       </Button>
       <Dropdown placement="bottom-end">
         <DropdownTrigger>
-          <Button isIconOnly className="h-[56px]">
+          <Button isIconOnly className="h-[40px]">
             <ChevronDownIcon />
           </Button>
         </DropdownTrigger>

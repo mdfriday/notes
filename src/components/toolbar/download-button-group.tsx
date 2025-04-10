@@ -123,13 +123,13 @@ export default function DownloadButtonGroup({ markdown }: DownloadButtonGroupPro
 
   return (
     <ButtonGroup className="w-full" variant="flat">
-      <Button className="h-[56px] w-full" onClick={handleDownloadButtonClick}>
-        <Download size={20} />
+      <Button className="h-[40px] w-full" onClick={handleDownloadButtonClick}>
+        <Download size={18} />
         {labelsMap[selectedOptionValue]}
       </Button>
       <Dropdown placement="bottom-end">
         <DropdownTrigger>
-          <Button isIconOnly className="h-[56px]">
+          <Button isIconOnly className="h-[40px]">
             <ChevronDownIcon />
           </Button>
         </DropdownTrigger>
