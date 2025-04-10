@@ -20,7 +20,7 @@ import { api } from '@/core/utils/apiUtils.ts';
  */
 function mapApiImageToImageItem(apiImage: ApiImageItem): ImageItem {
   return {
-    id: apiImage.id,
+    id: String(apiImage.id),
     uuid: apiImage.uuid,
     url: apiImage.asset,
     title: apiImage.name,
