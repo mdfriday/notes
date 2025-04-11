@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Marked } from "marked";
 import { markedHighlight } from "marked-highlight";
 import hljs from "highlight.js";
@@ -57,56 +57,123 @@ export default function IndexPage() {
   const { articleStyle, template } = ToolbarState.useContainer();
   const { shortcodeInstance, stepRender, finalRender } = useProject();
 
-  const [markdown, setMarkdown] = useState(welcomeMarkdownZh);
+  // 首先获取语言配置
+  const language = i18n.language as "zh" | "en";
+  
+  // 状态初始化逻辑，使用更简化直接的方式
+  // 直接从 localStorage 获取项目和第一个文件
+  const initialProjectData = useMemo(() => {
+    const project = getCurrentProject();
+    if (!project) return { project: null, fileId: "", file: null, content: "" };
+    
+    // 找到第一个非目录文件
+    const firstFile = project.files.find(file => !file.isDirectory);
+
+    return {
+      project,
+      fileId: firstFile?.id || "",
+      file: firstFile || null,
+      content: firstFile?.content || ""
+    };
+  }, []);
+  
+  // 初始化状态
+  const [currentProject, setCurrentProject] = useState<Project | null>(initialProjectData.project);
+  const [selectedFileId, setSelectedFileId] = useState<string>(initialProjectData.fileId);
+  const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(initialProjectData.file);
+  const [markdown, setMarkdown] = useState(() => {
+    // 如果有文件内容，使用文件内容
+    if (initialProjectData.content) {
+      return initialProjectData.content;
+    }
+    // 否则使用默认欢迎内容
+    return language === "zh" ? welcomeMarkdownZh : welcomeMarkdownEn;
+  });
+  
   const [isModified, setIsModified] = useState(false);
   const [inlineStyledHTML, setInlineStyledHTML] = useState("");
   const [showRenderedHTML, setShowRenderedHTML] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProjectExplorerCollapsed, setIsProjectExplorerCollapsed] = useState(false);
-  
-  // 项目和文件状态
-  const [currentProject, setCurrentProject] = useState<Project | null>(null);
-  const [selectedFileId, setSelectedFileId] = useState<string>("");
-  const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(null);
 
-  // 初始化项目
+  // 处理项目初始化和shortcode注册
   useEffect(() => {
-    const language = i18n.language as "zh" | "en";
-    const initialProject = initializeProjects(language);
-    
-    if (initialProject) {
-      setCurrentProject(initialProject);
-      
-      // 设置初始选中的文件（通常是 index.md）
-      if (initialProject.files.length > 0) {
-        // 默认选择第一个非目录文件
-        const firstFile = initialProject.files.find(file => !file.isDirectory);
-        if (firstFile) {
-          setSelectedFileId(firstFile.id);
-          setSelectedFile(firstFile);
-          
-          // 在设置 markdown 内容之前，确保所有 shortcode 都已注册
-          const loadFileWithShortcodes = async () => {
-            try {
-              // 检查内容中的 shortcode 并确保它们已注册
-              await shortcodeService.ensureShortcodesRegistered(firstFile.content);
-              // 设置 markdown 内容
-              setMarkdown(firstFile.content);
-            } catch (error) {
-              console.error('Error processing shortcodes in file content:', error);
-              setMarkdown(firstFile.content);
-            }
-          };
-          
-          loadFileWithShortcodes();
+    // 检查状态一致性
+    if (currentProject && selectedFile) {
+      // 确保内容相等
+      if (selectedFile.content !== markdown) {
+        if (!isModified) {
+          setMarkdown(selectedFile.content);
+        } else {
+          console.log('MD_FRIDAY_DEBUG: useEffect - 内容不一致但已修改，不更新markdown');
         }
       }
-    } else {
-      // 没有项目时，显示欢迎页面
-      setCurrentProject(null);
-      setSelectedFileId("");
-      setSelectedFile(null);
-      setMarkdown(i18n.language === "zh" ? welcomeMarkdownZh : welcomeMarkdownEn);
+      
+      // 确保shortcodes已注册
+      const ensureShortcodes = async () => {
+        try {
+          await shortcodeService.ensureShortcodesRegistered(selectedFile.content);
+        } catch (error) {
+          console.error('Error processing shortcodes:', error);
+        }
+      };
+      
+      ensureShortcodes();
+    }
+    // 如果没有项目，尝试初始化
+    else if (!currentProject) {
+      const initialProject = initializeProjects(language);
+
+      if (initialProject) {
+        setCurrentProject(initialProject);
+        
+        // 设置初始选中的文件
+        if (initialProject.files.length > 0) {
+          const firstFile = initialProject.files.find(file => !file.isDirectory);
+          if (firstFile) {
+            setSelectedFileId(firstFile.id);
+            setSelectedFile(firstFile);
+            
+            // 加载文件内容
+            const loadFileContent = async () => {
+              try {
+                // 确保所有shortcode都已注册
+                await shortcodeService.ensureShortcodesRegistered(firstFile.content);
+                setMarkdown(firstFile.content);
+              } catch (error) {
+                console.error('Error processing shortcodes:', error);
+                setMarkdown(firstFile.content);
+              }
+            };
+            
+            loadFileContent();
+          }
+        }
+      } else {
+        // 无项目时显示欢迎页面
+        setMarkdown(language === "zh" ? welcomeMarkdownZh : welcomeMarkdownEn);
+      }
+    } 
+    // 如果已有项目但没有选中文件，尝试选择第一个文件
+    else if (currentProject && !selectedFile) {
+      const firstFile = currentProject.files.find(file => !file.isDirectory);
+      if (firstFile) {
+        setSelectedFileId(firstFile.id);
+        setSelectedFile(firstFile);
+        
+        // 加载文件内容
+        const loadFileContent = async () => {
+          try {
+            await shortcodeService.ensureShortcodesRegistered(firstFile.content);
+            setMarkdown(firstFile.content);
+          } catch (error) {
+            console.error('Error processing shortcodes:', error);
+            setMarkdown(firstFile.content);
+          }
+        };
+        
+        loadFileContent();
+      }
     }
     
     // 监听项目变更事件
@@ -124,20 +191,20 @@ export default function IndexPage() {
               setSelectedFileId(firstFile.id);
               setSelectedFile(firstFile);
               
-              // 在设置 markdown 内容之前，确保所有 shortcode 都已注册
-              const loadFileWithShortcodes = async () => {
+              // 加载文件内容
+              const loadFileContent = async () => {
                 try {
-                  // 检查内容中的 shortcode 并确保它们已注册
                   await shortcodeService.ensureShortcodesRegistered(firstFile.content);
-                  // 设置 markdown 内容
                   setMarkdown(firstFile.content);
+                  setIsModified(false); // 重置修改状态
                 } catch (error) {
-                  console.error('Error processing shortcodes in file content:', error);
+                  console.error('Error processing shortcodes:', error);
                   setMarkdown(firstFile.content);
+                  setIsModified(false); // 重置修改状态
                 }
               };
               
-              loadFileWithShortcodes();
+              loadFileContent();
             }
           }
         }
@@ -149,33 +216,38 @@ export default function IndexPage() {
     return () => {
       window.removeEventListener("project-changed", handleProjectChange);
     };
-  }, [i18n.language]);
+  }, [language, currentProject, selectedFile, selectedFileId, markdown, isModified]); // 添加更多依赖项
 
   // 文件选择处理
   const handleFileSelect = (fileId: string) => {
-    if (!currentProject) return;
+    if (!currentProject) {
+      console.log('MD_FRIDAY_DEBUG: handleFileSelect - 无当前项目');
+      return;
+    }
     
     const file = getFileById(currentProject.id, fileId);
     if (file && !file.isDirectory) {
+      // 保存状态变更
       setSelectedFileId(fileId);
       setSelectedFile(file);
+      setIsModified(false); // 重要：重置修改状态
       
       // 在设置 markdown 内容之前，确保所有 shortcode 都已注册
       const loadFileWithShortcodes = async () => {
         try {
           // 检查内容中的 shortcode 并确保它们已注册
           await shortcodeService.ensureShortcodesRegistered(file.content);
-          // 设置 markdown 内容
           setMarkdown(file.content);
           setIsModified(false);
         } catch (error) {
-          console.error('Error processing shortcodes in file content:', error);
           setMarkdown(file.content);
           setIsModified(false);
         }
       };
       
       loadFileWithShortcodes();
+    } else {
+      console.log('MD_FRIDAY_DEBUG: handleFileSelect - 文件不存在或是目录');
     }
   };
 
@@ -187,17 +259,17 @@ export default function IndexPage() {
     }
   };
 
+  // 替换为一个更可控的useEffect
   useEffect(() => {
-    setMarkdown(i18n.language === "zh" ? welcomeMarkdownZh : welcomeMarkdownEn);
-  }, [i18n.language]);
-
-  useEffect(() => {
-    if (template !== "") {
-      setMarkdown(template)
-    } else {
-      setMarkdown(i18n.language === "zh" ? welcomeMarkdownZh : welcomeMarkdownEn);
+    // 只在没有项目或文件时应用模板或欢迎内容
+    if (!currentProject || !selectedFile) {
+      if (template !== "") {
+        setMarkdown(template);
+      } else {
+        setMarkdown(i18n.language === "zh" ? welcomeMarkdownZh : welcomeMarkdownEn);
+      }
     }
-  }, [template]);
+  }, [i18n.language, template, currentProject, selectedFile]);
 
   // Parse markdown to HTML and apply inline themes
   useEffect(() => {
@@ -205,24 +277,18 @@ export default function IndexPage() {
       try {
         // 处理 markdown 内容
         let parsedHTML = '';
-        
-        // 检查是否包含 shortcode 标签
-        if (markdown.includes('{{<') && markdown.includes('>}}')) {
-          // 确保所有 shortcode 都已注册
-          await shortcodeService.ensureShortcodesRegistered(markdown);
-          
-          // Step 1: 替换 shortcodes 为占位符
-          const withPlaceholders = shortcodeService.stepRender(markdown);
-          
-          // Step 2: 使用 marked 处理 markdown
-          const htmlContent = await markedInstance.parse(withPlaceholders);
-          
-          // Step 3: 最终渲染，将占位符替换为渲染后的 shortcode 内容
-          parsedHTML = shortcodeService.finalRender(htmlContent);
-        } else {
-          // 普通 markdown 内容，直接使用 marked 处理
-          parsedHTML = await markedInstance.parse(markdown);
-        }
+
+        // 确保所有 shortcode 都已注册
+        await shortcodeService.ensureShortcodesRegistered(markdown);
+
+        // Step 1: 替换 shortcodes 为占位符
+        const withPlaceholders = shortcodeService.stepRender(markdown);
+
+        // Step 2: 使用 marked 处理 markdown
+        const htmlContent = await markedInstance.parse(withPlaceholders);
+
+        // Step 3: 最终渲染，将占位符替换为渲染后的 shortcode 内容
+        parsedHTML = shortcodeService.finalRender(htmlContent);
         
         // 处理图片链接并包装 HTML
         const wrappedHTML = wrapWithContainer(replaceImgSrc(parsedHTML));
@@ -241,9 +307,19 @@ export default function IndexPage() {
     setMarkdown(newMarkdown);
     setIsModified(true);
     
-    // 如果有选中的文件，同时更新文件内容
     if (currentProject && selectedFile) {
+      // 保存文件内容
       updateFileContent(currentProject.id, selectedFile.id, newMarkdown);
+      
+      // 更新当前项目对象，确保显示最新的修改时间
+      const now = new Date().toISOString();
+      const updatedProject = {
+        ...currentProject,
+        updatedAt: now
+      };
+      
+      // 更新视图中的项目对象
+      setCurrentProject(updatedProject);
     }
   };
 

@@ -34,7 +34,10 @@ export const setCurrentProjectId = (projectId: string): void => {
 // 获取当前项目
 export const getCurrentProject = (): Project | null => {
   const projectId = getCurrentProjectId();
-  if (!projectId) return null;
+  if (!projectId) {
+    console.log('MD_FRIDAY_DEBUG: getCurrentProject - 没有当前项目ID');
+    return null;
+  }
 
   const projects = getAllProjects();
   return projects.find(p => p.id === projectId) || null;
@@ -48,7 +51,12 @@ export const getProjectById = (projectId: string): Project | null => {
 
 // 保存项目列表
 export const saveProjects = (projects: Project[]): void => {
-  localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+  try {
+    const jsonStr = JSON.stringify(projects);
+    localStorage.setItem(PROJECTS_STORAGE_KEY, jsonStr);
+  } catch (error) {
+    console.error('MD_FRIDAY_DEBUG: saveProjects - 保存失败，错误:', error);
+  }
 };
 
 // 更新项目
@@ -57,106 +65,16 @@ export const updateProject = (project: Project): void => {
   const index = projects.findIndex(p => p.id === project.id);
   
   if (index !== -1) {
+    const now = new Date().toISOString();
     projects[index] = {
       ...project,
-      updatedAt: new Date().toISOString()
+      updatedAt: now
     };
     saveProjects(projects);
-  }
-};
 
-// 创建新项目
-export const createProject = (
-  type: "xiaohongshu" | "resume" | "website",
-  templateId: string,
-  language: "zh" | "en" = "zh"
-): Project => {
-  const projectId = generateId();
-  const nowISOString = new Date().toISOString();
-  
-  // 生成项目名称
-  const getProjectTypePrefix = () => {
-    switch (type) {
-      case "xiaohongshu": return language === "zh" ? "小红书" : "Xiaohongshu";
-      case "resume": return language === "zh" ? "简历" : "Resume";
-      case "website": return language === "zh" ? "网站" : "Website";
-    }
-  };
-  
-  const projectName = `${getProjectTypePrefix()} ${new Date().toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US')}`;
-  
-  // 根据项目类型创建文件结构
-  let files: ProjectFile[] = [];
-  
-  if (type === "website") {
-    // 网站项目有多个文件，包括 index.md 和 about 目录中的 company.md
-    files = [
-      {
-        id: generateId(),
-        name: "index.md",
-        content: websiteIndexTemplate,
-        path: "/index.md",
-        isDirectory: false
-      },
-      {
-        id: generateId(),
-        name: "about",
-        content: "",
-        path: "/about",
-        isDirectory: true,
-        children: [
-          {
-            id: generateId(),
-            name: "company.md",
-            content: websiteCompanyTemplate,
-            path: "/about/company.md",
-            isDirectory: false
-          }
-        ]
-      }
-    ];
-  } else if (type === "resume") {
-    // 简历项目只有一个文件
-    files = [
-      {
-        id: generateId(),
-        name: "index.md",
-        content: resumeTemplate,
-        path: "/index.md",
-        isDirectory: false
-      }
-    ];
   } else {
-    // 小红书项目只有一个文件
-    files = [
-      {
-        id: generateId(),
-        name: "index.md",
-        content: xiaohongshuTemplate,
-        path: "/index.md",
-        isDirectory: false
-      }
-    ];
+    console.warn('MD_FRIDAY_DEBUG: updateProject - 未找到项目，无法更新', project.id);
   }
-  
-  const newProject: Project = {
-    id: projectId,
-    name: projectName,
-    type,
-    templateId,
-    files,
-    createdAt: nowISOString,
-    updatedAt: nowISOString
-  };
-  
-  // 保存新项目
-  const projects = getAllProjects();
-  saveProjects([...projects, newProject]);
-  
-  // 设置为当前项目
-  setCurrentProjectId(projectId);
-  
-  return newProject;
 };
 
 // 获取文件内容
@@ -181,8 +99,11 @@ export const getFileById = (projectId: string, fileId: string): ProjectFile | nu
 // 更新文件内容
 export const updateFileContent = (projectId: string, fileId: string, content: string): void => {
   const project = getProjectById(projectId);
-  if (!project) return;
-  
+  if (!project) {
+    console.warn('MD_FRIDAY_DEBUG: updateFileContent - 未找到项目，无法更新', projectId);
+    return;
+  }
+
   const updateFileInArray = (files: ProjectFile[]): boolean => {
     for (let i = 0; i < files.length; i++) {
       if (files[i].id === fileId) {
@@ -198,13 +119,22 @@ export const updateFileContent = (projectId: string, fileId: string, content: st
     return false;
   };
   
-  const filesCopy = JSON.parse(JSON.stringify(project.files));
-  if (updateFileInArray(filesCopy)) {
-    updateProject({
-      ...project,
-      files: filesCopy,
-      updatedAt: new Date().toISOString()
-    });
+  try {
+    const filesCopy = JSON.parse(JSON.stringify(project.files));
+    const fileUpdated = updateFileInArray(filesCopy);
+
+    if (fileUpdated) {
+      const updatedProject = {
+        ...project,
+        files: filesCopy,
+        updatedAt: new Date().toISOString()
+      };
+      updateProject(updatedProject);
+    } else {
+      console.warn('MD_FRIDAY_DEBUG: updateFileContent - 未找到文件，无法更新', fileId);
+    }
+  } catch (error) {
+    console.error('MD_FRIDAY_DEBUG: updateFileContent - 更新过程中发生错误', error);
   }
 };
 

@@ -43,10 +43,16 @@ const ProjectExplorer: React.FC<ProjectExplorerProps> = ({
 }) => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [projectName, setProjectName] = useState(project.name);
+  const [updatedAt, setUpdatedAt] = useState(project.updatedAt);
 
   useEffect(() => {
     setProjectName(project.name);
   }, [project.name]);
+
+  useEffect(() => {
+    setUpdatedAt(project.updatedAt);
+    console.log('ProjectExplorer - 项目更新时间已更新', new Date(project.updatedAt).toLocaleString());
+  }, [project.updatedAt]);
 
   const handleNameChange = () => {
     if (projectName.trim() !== project.name) {
@@ -227,7 +233,7 @@ const ProjectExplorer: React.FC<ProjectExplorerProps> = ({
           </span>
         </div>
         <div className="mt-1 text-xs text-gray-500">
-          更新时间: {new Date(project.updatedAt).toLocaleString()}
+          更新时间: {new Date(updatedAt).toLocaleString()}
         </div>
       </div>
 

@@ -90,6 +90,7 @@ export const MarkdownEditor: React.FC<CodeEditorProps> = ({
     [],
   );
 
+  // 创建和挂载编辑器 - 只在组件挂载时运行一次
   useEffect(() => {
     if (!editorRef.current) return;
 
@@ -102,7 +103,8 @@ export const MarkdownEditor: React.FC<CodeEditorProps> = ({
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
-            onChange(update.state.doc.toString());
+            const newValue = update.state.doc.toString();
+            onChange(newValue);
           }
         }),
         theme,
@@ -120,11 +122,16 @@ export const MarkdownEditor: React.FC<CodeEditorProps> = ({
     return () => {
       view.destroy();
     };
-  }, []); // Only run once on mount
+  }, []); // 只在挂载时运行一次
 
-  // Update editor content when markdown prop changes
+  // 确保编辑器内容与value同步
   useEffect(() => {
-    if (viewRef.current && value !== viewRef.current.state.doc.toString()) {
+    if (!viewRef.current) return;
+    
+    const currentContent = viewRef.current.state.doc.toString();
+    
+    // 只有当value与当前编辑器内容不同时才更新
+    if (value !== currentContent) {
       viewRef.current.dispatch({
         changes: {
           from: 0,
@@ -133,7 +140,7 @@ export const MarkdownEditor: React.FC<CodeEditorProps> = ({
         },
       });
     }
-  }, [value]);
+  }, [value]); // 当value变化时更新编辑器内容
 
   return <div ref={editorRef} onPaste={handlePaste} className="h-full" />;
 };

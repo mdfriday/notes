@@ -3,7 +3,6 @@ import { ShortcodeItem, ShortcodeMetadata, ShortcodeSearchResult } from '../../t
 import { shortcodeApiService } from '@/core/services/shortcodeApiService.ts';
 import { shortcodeService } from '@/core/services/shortcodeService.ts';
 import { Shortcode } from '@mdfriday/shortcode';
-import { createProject as projectServiceCreateProject } from '@/core/services/projectService.ts';
 import { Project, ProjectFile } from '../../components/project/ProjectExplorer.tsx';
 import { useTranslation } from 'react-i18next';
 
@@ -216,7 +215,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
       shortcodeService.registerShortcode(selectedShortcode);
       
       // 处理 example 内容
-      let exampleContent = selectedShortcode.example || `{{< ${selectedShortcode.title} >}}`;
+      // Decode the example content which might be base64 encoded
+      let exampleContent = shortcodeService.decodeExample(selectedShortcode) || `{{< ${selectedShortcode.title} >}}`;
       
       // 如果 example 是远程 URL，则下载内容
       if (exampleContent.startsWith('https://')) {
