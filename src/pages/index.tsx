@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { Marked } from "marked";
 import { markedHighlight } from "marked-highlight";
 import hljs from "highlight.js";
@@ -95,18 +95,34 @@ export default function IndexPage() {
   const [showRenderedHTML, setShowRenderedHTML] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProjectExplorerCollapsed, setIsProjectExplorerCollapsed] = useState(false);
+  
+  // 保存计时器引用
+  const saveTimerRef = useRef<number | null>(null);
+  // 使用 ref 来追踪最新的 markdown 内容
+  const latestMarkdownRef = useRef<string>(markdown);
+  
+  // 每当 markdown 更新时，更新 ref
+  useEffect(() => {
+    latestMarkdownRef.current = markdown;
+  }, [markdown]);
+  
+  // 清除现有计时器的函数
+  const clearSaveTimer = () => {
+    if (saveTimerRef.current !== null) {
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+  };
 
   // 处理项目初始化和shortcode注册
   useEffect(() => {
     // 检查状态一致性
     if (currentProject && selectedFile) {
-      // 确保内容相等
-      if (selectedFile.content !== markdown) {
-        if (!isModified) {
-          setMarkdown(selectedFile.content);
-        } else {
-          console.log('MD_FRIDAY_DEBUG: useEffect - 内容不一致但已修改，不更新markdown');
-        }
+      // 确保内容相等 - 只在初始加载或切换文件时更新，而不是在编辑过程中
+      // 通过检查saveTimerRef来确定是否正在进行编辑防抖
+      if (selectedFile.content !== markdown && !isModified && saveTimerRef.current === null) {
+        setMarkdown(selectedFile.content);
+        console.log('MD_FRIDAY_DEBUG: useEffect - 初始加载或切换文件，更新编辑器内容');
       }
       
       // 确保shortcodes已注册
@@ -216,7 +232,7 @@ export default function IndexPage() {
     return () => {
       window.removeEventListener("project-changed", handleProjectChange);
     };
-  }, [language, currentProject, selectedFile, selectedFileId, markdown, isModified]); // 添加更多依赖项
+  }, [language, currentProject, selectedFile, selectedFileId]); // 移除 markdown 和 isModified 依赖
 
   // 文件选择处理
   const handleFileSelect = (fileId: string) => {
@@ -304,22 +320,50 @@ export default function IndexPage() {
   }, [markdown, articleStyle]);
 
   const handleMarkdownChange = (newMarkdown: string) => {
+    // 立即更新 markdown 以触发实时渲染
     setMarkdown(newMarkdown);
+    
+    // 标记为已修改
     setIsModified(true);
     
+    // 如果有项目和文件，安排延迟保存
     if (currentProject && selectedFile) {
-      // 保存文件内容
-      updateFileContent(currentProject.id, selectedFile.id, newMarkdown);
+      // 清除之前的计时器
+      clearSaveTimer();
       
-      // 更新当前项目对象，确保显示最新的修改时间
-      const now = new Date().toISOString();
-      const updatedProject = {
-        ...currentProject,
-        updatedAt: now
-      };
-      
-      // 更新视图中的项目对象
-      setCurrentProject(updatedProject);
+      // 设置新的计时器，5秒后保存
+      saveTimerRef.current = window.setTimeout(() => {
+        // 获取最新的 markdown 内容
+        const currentMarkdown = latestMarkdownRef.current;
+        
+        // 保存文件内容
+        updateFileContent(currentProject.id, selectedFile.id, currentMarkdown);
+        
+        // 更新当前项目对象，确保显示最新的修改时间
+        const now = new Date().toISOString();
+        const updatedProject = {
+          ...currentProject,
+          updatedAt: now
+        };
+        
+        // 更新视图中的项目对象
+        setCurrentProject(updatedProject);
+        
+        // 更新selectedFile的content，避免状态不一致
+        setSelectedFile(prevFile => {
+          if (!prevFile) return null;
+          return {
+            ...prevFile,
+            content: currentMarkdown
+          };
+        });
+        
+        // 内容已保存，重置修改状态
+        setIsModified(false);
+        
+        // 清除计时器引用
+        saveTimerRef.current = null;
+      }, 5000); // 5秒延迟
     }
   };
 
@@ -331,6 +375,14 @@ export default function IndexPage() {
     setIsProjectExplorerCollapsed(!isProjectExplorerCollapsed);
   };
 
+  // 组件卸载时清除计时器
+  useEffect(() => {
+    return () => {
+      clearSaveTimer();
+    };
+  }, []);
+  
+  // 添加 beforeUnload 监听，防止用户未保存内容就关闭页面
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
