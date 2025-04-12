@@ -96,7 +96,7 @@ export const shortcodeService = {
           };
           
           globalShortcode.registerShortcode(mainMetadata);
-          console.log(`Registered main shortcode: ${shortcodeItem.title}`);
+          console.log(`Registered main shortcode: ${shortcodeItem.title}, with ${mainTemplate}`);
           
           // Register all additional sub-shortcodes
           Object.entries(templateJson).forEach(([name, template]) => {
@@ -115,7 +115,7 @@ export const shortcodeService = {
             };
             
             globalShortcode.registerShortcode(subMetadata);
-            console.log(`Registered sub-shortcode: ${name}`);
+            console.log(`Registered sub-shortcode: ${name}, with ${template}`);
           });
         } else {
           console.error(`Main template not found for shortcode: ${shortcodeItem.title}`);
