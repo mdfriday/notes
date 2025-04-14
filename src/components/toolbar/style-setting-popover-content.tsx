@@ -94,11 +94,11 @@ export const StyleSettingPopoverContent = () => {
           <div className="mt-4 flex flex-col gap-3 w-full">
             <Slider
               className="max-w-md"
-              defaultValue={Number(newStyle["padding"].slice(0, -2)) || 32}
+              defaultValue={Number(newStyle["padding"].slice(0, -2)) || 16}
               getValue={(donuts) => `${donuts}px`}
               label={t(`customize.containerPadding`)}
               maxValue={64}
-              minValue={16}
+              minValue={0}
               step={4}
               onChange={(value) => {
                 setNewStyle({
