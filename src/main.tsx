@@ -12,6 +12,11 @@ import "@/assets/css/globals.css";
 import "./core/utils/i18n.ts";
 import { ToolbarState } from "@/core/state/toolbarState.ts";
 
+// Set default language to Chinese if not already set
+if (!localStorage.getItem("APP_LANG")) {
+  localStorage.setItem("APP_LANG", "zh");
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>

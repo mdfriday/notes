@@ -26,9 +26,7 @@ function LanguageSwitcher() {
       if (["en", "zh"].includes(appLang)) {
         navigate(`/${appLang}${location.pathname}`, { replace: true });
       } else {
-        const userLang = navigator.language.startsWith("zh") ? "zh" : "en";
-
-        navigate(`/${userLang}${location.pathname}`, { replace: true });
+        navigate(`/zh${location.pathname}`, { replace: true });
       }
     }
   }, [location, i18n]);
