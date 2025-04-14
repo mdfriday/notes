@@ -272,6 +272,9 @@ export default function IndexPage() {
     if (updatedProject) {
       updateProject(updatedProject);
       setCurrentProject(updatedProject);
+      
+      // 触发一个自定义事件以通知其他组件（比如Sidebar）项目已更新
+      window.dispatchEvent(new CustomEvent("project-updated", { detail: { projectId: updatedProject.id } }));
     }
   };
 

@@ -46,10 +46,17 @@ export default function Sidebar({ isOpen, onToggle, onProjectSelect }: SidebarPr
       loadProjects();
     };
     
+    // 监听项目更新事件
+    const handleProjectUpdate = () => {
+      loadProjects();
+    };
+    
     window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("project-updated", handleProjectUpdate);
     
     return () => {
       window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("project-updated", handleProjectUpdate);
     };
   }, []);
 
