@@ -439,7 +439,6 @@ export default function IndexPage() {
         <div
           dangerouslySetInnerHTML={{ __html: inlineStyledHTML }}
           id="markdown-body"
-          className="h-full max-w-4xl mx-auto pb-4"
         />
       ) : (
         inlineStyledHTML
