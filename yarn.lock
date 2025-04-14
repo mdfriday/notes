@@ -677,10 +677,10 @@
   resolved "https://registry.yarnpkg.com/@marijn/find-cluster-break/-/find-cluster-break-1.0.2.tgz#775374306116d51c0c500b8c4face0f9a04752d8"
   integrity sha512-l0h88YhZFyKdXIFNfSWpyjStDjGHwZ/U7iobcK1cQQD8sejsONdQtTVU+1wVN1PBw40PiiHB1vA5S7VTfQiP9g==
 
-"@mdfriday/shortcode@^0.0.9":
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/@mdfriday/shortcode/-/shortcode-0.0.9.tgz#6b000f309abe26b8dfcdfd986c5dff9a6075b147"
-  integrity sha512-ES9HDGYV0iy6X3w5kPZ5EbgZqsggZ0kZKuZTSauCC4UAK9n3DKkzFLxVcHAvNxdV921ZNJRPD8BGb8wkN7Qvsw==
+"@mdfriday/shortcode@^0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@mdfriday/shortcode/-/shortcode-0.0.12.tgz#a70155a1a91d3fa7cd9406fda5d28d4033e85b5c"
+  integrity sha512-SYpQFZWas8r5EEDl3FI+216vQiA+Us5AImZQxAMBg7tsO3SBUecUFAv/EZIy53PEAR7U6E9vWK8ni4x5cu0T1w==
 
 "@nextui-org/accordion@2.2.7":
   version "2.2.7"
