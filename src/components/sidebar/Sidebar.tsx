@@ -113,7 +113,7 @@ export default function Sidebar({ isOpen, onToggle, onProjectSelect }: SidebarPr
             strokeWidth={1.5}
             stroke="currentColor"
             className={`w-4 h-4 transition-transform ${
-              isOpen ? "rotate-180" : "rotate-0"
+              isOpen ? "rotate-0" : "rotate-180"
             }`}
           >
             <path
