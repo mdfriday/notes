@@ -34,7 +34,7 @@ function mapApiShortcodeToShortcodeItem(apiShortcode: ApiShortcodeItem): Shortco
     id: apiShortcode.uuid,
     title: apiShortcode.name,
     slug: apiShortcode.slug,
-    description: apiShortcode.slug !== apiShortcode.name ? apiShortcode.slug : undefined,
+    description: apiShortcode.desc,
     template: apiShortcode.template,
     example: apiShortcode.example,
     tags: apiShortcode.tags,

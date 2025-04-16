@@ -1,6 +1,8 @@
 import { memo, useState, useEffect, useRef } from 'react';
 import type { ShortcodeItem } from '@/types/shortcode';
 import { getShortcodeThumbnailUrl } from '@/core/utils/shortcodeUtils';
+import Popover, { PopoverPosition } from '@/components/ui/Popover';
+import { calculateBestPosition } from '@/core/utils/popoverUtils';
 import '@/styles/modal.css';
 
 interface ShortcodeCardProps {
@@ -30,6 +32,8 @@ const ShortcodeCard = ({
   
   const [isLoaded, setIsLoaded] = useState(prefetched);
   const [isVisible, setIsVisible] = useState(false);
+  const [showPopover, setShowPopover] = useState(false);
+  const [popoverPosition, setPopoverPosition] = useState<PopoverPosition>({ top: 0, left: 0 });
   const cardRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   
@@ -42,6 +46,44 @@ const ShortcodeCard = ({
   const handleImageLoad = () => {
     setIsLoaded(true);
   };
+  
+  // Handle mouse enter/leave for popover
+  const handleMouseEnter = () => {
+    if (isVisible && cardRef.current) {
+      updatePopoverPosition();
+      setShowPopover(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setShowPopover(false);
+  };
+  
+  // Update the popover position based on the card position
+  const updatePopoverPosition = () => {
+    if (!cardRef.current) return;
+    
+    const triggerRect = cardRef.current.getBoundingClientRect();
+    const position = calculateBestPosition({ triggerRect });
+    setPopoverPosition(position);
+  };
+  
+  // Update popover position when window is resized
+  useEffect(() => {
+    if (showPopover) {
+      const handleResize = () => {
+        updatePopoverPosition();
+      };
+      
+      window.addEventListener('resize', handleResize);
+      window.addEventListener('scroll', handleResize);
+      
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('scroll', handleResize);
+      };
+    }
+  }, [showPopover]);
   
   // Load the image only when component is visible
   useEffect(() => {
@@ -112,6 +154,8 @@ const ShortcodeCard = ({
         isSelected ? 'ring-2 ring-blue-500 border-blue-500' : 'border border-gray-200'
       }`}
       onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       style={{ 
         // Set the card's fixed width to the thumbnail width plus padding
         width: thumbnailInfo.displayWidth > 0 
@@ -156,44 +200,55 @@ const ShortcodeCard = ({
         )}
       </div>
       
-      {/* Gradient overlay - only render when visible for better performance */}
+      {/* 简单信息提示 - 显示标题 */}
       {isVisible && (
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      )}
-      
-      {/* Content overlay - only render when visible for better performance */}
-      {isVisible && (
-        <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-          <h3 className="text-white font-semibold text-lg line-clamp-1">{title}</h3>
-          {description && (
-            <p className="text-gray-200 text-sm mt-1 line-clamp-2">{description}</p>
-          )}
-          
-          {/* Tags - only show a few */}
-          {tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {tags.slice(0, 3).map((tag) => (
-                <span 
-                  key={tag} 
-                  className="text-xs px-2 py-1 bg-black/30 text-white rounded-full backdrop-blur-sm"
-                >
-                  {tag}
-                </span>
-              ))}
-              {tags.length > 3 && (
-                <span className="text-xs px-2 py-1 bg-black/30 text-white rounded-full backdrop-blur-sm">
-                  +{tags.length - 3}
-                </span>
-              )}
-            </div>
-          )}
-          
-          {/* Display dimensions */}
-          <div className="mt-2 text-xs text-gray-200">
-            {width} × {height}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute bottom-0 left-0 right-0 p-3 transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+            <h3 className="text-white font-semibold text-base line-clamp-1">{title}</h3>
+            
+            {/* 简单的标签提示 - 只显示数量 */}
+            {tags.length > 0 && (
+              <div className="mt-1 text-xs text-gray-200">
+                {tags.length} 个标签
+              </div>
+            )}
           </div>
         </div>
       )}
+      
+      {/* 使用共享的 Popover 组件 */}
+      <Popover
+        isVisible={isVisible && showPopover}
+        position={popoverPosition}
+        zIndex={50}
+      >
+        <h3 className="font-semibold text-lg text-white">{title}</h3>
+        
+        {description && (
+          <div className="mt-2 max-h-48 overflow-y-auto custom-scrollbar">
+            <p className="text-gray-200 text-sm whitespace-pre-line">{description}</p>
+          </div>
+        )}
+        
+        {/* 完整标签列表 */}
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {tags.map((tag) => (
+              <span 
+                key={tag} 
+                className="text-xs px-2 py-1 bg-white/20 text-white rounded-full"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+        
+        {/* 尺寸信息 */}
+        <div className="mt-3 text-xs text-gray-300">
+          {width} × {height}
+        </div>
+      </Popover>
     </div>
   );
 };

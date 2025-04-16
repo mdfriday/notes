@@ -24,7 +24,7 @@ function mapApiImageToImageItem(apiImage: ApiImageItem): ImageItem {
     uuid: apiImage.uuid,
     url: apiImage.asset,
     title: apiImage.name,
-    description: apiImage.slug !== apiImage.name ? apiImage.slug : undefined,
+    description: apiImage.desc,
     width: apiImage.width,
     height: apiImage.height,
     tags: apiImage.tags,

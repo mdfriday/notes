@@ -14,6 +14,7 @@ export interface ApiImageItem {
   status: string;
   namespace: string;
   id: number;
+  desc: string;
   slug: string;
   hash: string;
   timestamp: number;
@@ -31,6 +32,7 @@ export interface ApiShortcodeItem {
   status: string;
   namespace: string;
   id: number;
+  desc: string;
   slug: string;
   hash: string;
   timestamp: number;

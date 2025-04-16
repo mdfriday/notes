@@ -95,27 +95,28 @@ export const shortcodeService = {
             tags: shortcodeItem.tags
           };
           
-          globalShortcode.registerShortcode(mainMetadata);
-          console.log(`Registered main shortcode: ${shortcodeItem.title}, with ${mainTemplate}`);
+          let res = globalShortcode.registerShortcode(mainMetadata);
+          console.log(`Registered main shortcode: ${shortcodeItem.title}, with ${mainTemplate}, result: ${res}`);
           
           // Register all additional sub-shortcodes
-          Object.entries(templateJson).forEach(([name, template]) => {
+          Object.entries(templateJson).forEach(([name, template], index) => {
             // Skip the main shortcode we already registered
             if (name === shortcodeItem.title) {
               return;
             }
-            
+
+            const sid = parseInt(shortcodeItem.id, 10) + 10000 + index; // Not needed for registration by name
             // Register the sub-shortcode with a minimal metadata
             const subMetadata: ShortcodeMetadata = {
-              id: 0, // Not needed for registration by name
+              id: sid, // Not needed for registration by name
               name,
               template,
-              uuid: '', // Not needed for registration by name
+              uuid: shortcodeItem.id + '-' + name, // Not needed for registration by name
               tags: [] // Not needed for registration by name
             };
             
-            globalShortcode.registerShortcode(subMetadata);
-            console.log(`Registered sub-shortcode: ${name}, with ${template}`);
+            let res = globalShortcode.registerShortcode(subMetadata);
+            console.log(`Registered sub-shortcode: ${name}, with ${template}, result: ${res}`);
           });
         } else {
           console.error(`Main template not found for shortcode: ${shortcodeItem.title}`);
