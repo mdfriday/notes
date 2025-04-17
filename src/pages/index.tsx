@@ -47,8 +47,13 @@ const markedInstance = new Marked(
 
 // Helper functions
 const wrapWithContainer = (htmlString: string) => {
-  return `<div class="container-layout" style="margin: 0;">
+  const watermarkHTML = `<div class="watermark" style="position: absolute; bottom: 6px; right: 10px; color: #999; font-size: 12px; z-index: 2; white-space: nowrap;">
+      <a href="https://notes.sunwei.xyz" style="color: #999; text-decoration: none;">MDFriday</a>&#160;制作&#160;❤️
+    </div>`;
+
+  return `<div class="container-layout" style="margin: 0; position: relative;">
       <div class="article" style="max-width: 960px;margin: 0 auto;">${htmlString}</div>
+      ${watermarkHTML}
     </div>`;
 };
 
