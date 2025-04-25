@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, ButtonGroup } from "@nextui-org/button";
-import { Palette } from "lucide-react";
+import { Settings2 } from "lucide-react";
 import { Popover, PopoverTrigger } from "@nextui-org/popover";
 import { useTranslation } from "react-i18next";
 
@@ -27,7 +27,7 @@ const StyleSettingPopover = () => {
       >
         <PopoverTrigger>
           <Button className="h-[40px] w-full">
-            <Palette size={18} />
+            <Settings2 size={18} />
             {t(`customize.buttonName`)}
           </Button>
         </PopoverTrigger>
