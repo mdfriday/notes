@@ -16,7 +16,9 @@
   },
   "toolbar": {
     "selectStyleText": "选择样式",
-    "selectTemplateText": "选择模板"
+    "selectTemplateText": "选择模板",
+    "quickSizeText": "预览宽度",
+    "defaultSize": "默认模式"
   },
   "commonToast": {
     "error": "发生了意想不到的错误！",

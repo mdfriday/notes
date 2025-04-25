@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { Marked } from "marked";
 import { markedHighlight } from "marked-highlight";
 import hljs from "highlight.js";
@@ -52,14 +52,14 @@ const wrapWithContainer = (htmlString: string) => {
     </div>`;
 
   return `<div class="container-layout" style="margin: 0; position: relative;">
-      <div class="article" style="max-width: 960px;margin: 0 auto;">${htmlString}</div>
+      <div class="article" style="max-width: 1080px;margin: 0 auto;">${htmlString}</div>
       ${watermarkHTML}
     </div>`;
 };
 
 export default function IndexPage() {
   const { i18n } = useTranslation();
-  const { articleStyle, template } = ToolbarState.useContainer();
+  const { articleStyle, template, rightPaneWidth } = ToolbarState.useContainer();
   const { shortcodeInstance, stepRender, finalRender } = useProject();
 
   // 首先获取语言配置
@@ -406,6 +406,19 @@ export default function IndexPage() {
     };
   }, [isModified]);
 
+  // Respond to window resize events to ensure proper layout
+  useEffect(() => {
+    const handleResize = () => {
+      // Force a re-render when window is resized
+      setShowRenderedHTML(prev => prev);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   // UI Components
   const EditorWithExplorer = (
     <div className="flex h-full w-full">
@@ -460,9 +473,10 @@ export default function IndexPage() {
             <ResizableSplitPane
               initialLeftWidth={45}
               leftPane={EditorWithExplorer}
-              maxLeftWidth={70}
-              minLeftWidth={30}
+              maxLeftWidth={80}
+              minLeftWidth={20}
               rightPane={RightContent}
+              rightPaneWidth={rightPaneWidth}
             />
           </div>
         </div>

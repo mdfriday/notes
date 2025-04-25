@@ -16,7 +16,9 @@
   },
   "toolbar": {
     "selectStyleText": "Select style",
-    "selectTemplateText": "Select Template"
+    "selectTemplateText": "Select Template",
+    "quickSizeText": "Preview Width",
+    "defaultSize": "Normal Mode"
   },
   "commonToast": {
     "error": "oops, something went wrong!",

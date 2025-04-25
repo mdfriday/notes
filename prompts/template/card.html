@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>钓鱼排名卡片</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            background-color: transparent;
+        }
+        
+        .card-container {
+            position: relative;
+            width: 1080px;
+            height: 1620px;
+            border-radius: 54px;
+            overflow: hidden;
+        }
+        
+        .card-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('rare-gold-25.webp');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .card-content {
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 72px;
+            color: #ffffff;
+            z-index: 1;
+        }
+        
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-direction: column;
+            position: relative;
+            margin-bottom: 120px;
+        }
+        
+        .rank-number {
+            font-size: 252px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 7px 7px 14px rgba(0, 0, 0, 0.6);
+            margin: 119px 83px 0px 83px;
+            line-height: 1;
+        }
+        
+        .fishing-type {
+            font-size: 54px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 4px 4px 7px rgba(0, 0, 0, 0.6);
+            margin-left: 90px;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 11px 36px;
+            border-radius: 36px;
+        }
+        
+        .avatar-container {
+            position: absolute;
+            top: 163px;
+            right: 0px;
+            width: 792px;
+            height: 792px;
+            overflow: hidden;
+        }
+        
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .card-middle {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            top: 1024px;
+            left: 0;
+            right: 0;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .user-name {
+            font-size: 101px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 46px;
+            text-shadow: 7px 7px 14px rgba(0, 0, 0, 0.6);
+        }
+        
+        .skills-container {
+            width: 90%;
+            display: flex;
+            justify-content: space-between;
+            margin: 0 auto;
+        }
+        
+        .skill-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 18%;
+        }
+        
+        .skill-label {
+            font-size: 50px;
+            text-shadow: 4px 4px 7px rgba(0, 0, 0, 0.6);
+            margin-bottom: 29px;
+            text-align: center;
+        }
+        
+        .score {
+            font-size: 65px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 4px 4px 7px rgba(0, 0, 0, 0.6);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container">
+        <div class="card-bg"></div>
+        <div class="card-content">
+            <div class="card-top">
+                <div class="rank-number">1</div>
+                <div class="fishing-type">野钓</div>
+                <div class="avatar-container">
+                    <img src="avatar.png" alt="用户头像" class="avatar-img">
+                </div>
+            </div>
+            <div class="card-middle">
+                <div class="user-name">钓鱼达人</div>
+                <div class="skills-container">
+                    <div class="skill-item">
+                        <div class="skill-label">判断</div>
+                        <div class="score">5</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-label">操作</div>
+                        <div class="score">4</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-label">策略</div>
+                        <div class="score">5</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-label">表达</div>
+                        <div class="score">3</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-label">创新</div>
+                        <div class="score">4</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

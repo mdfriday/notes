@@ -24,6 +24,7 @@ import LangButton from "@/components/lang-button.tsx";
 import StyleSettingPopover from "@/components/toolbar/style-setting-popover.tsx";
 import CopyButtonGroup from "@/components/toolbar/copy-button-group.tsx";
 import DownloadButtonGroup from "@/components/toolbar/download-button-group.tsx";
+import QuickSizeSelect from "@/components/toolbar/quick-size-select.tsx";
 import { ToolbarState } from "@/core/state/toolbarState";
 import { loadCSS, markdownStyles } from "@/config/post-styles.ts";
 import { loadTemplate, templateExamples } from "@/config/post-template.ts";
@@ -168,6 +169,12 @@ export const IntegratedNavbar: React.FC<IntegratedNavbarProps> = ({ markdown }) 
 
         <NavbarItem>
           <StyleSettingPopover />
+        </NavbarItem>
+        
+        <NavbarItem>
+          <div className="w-[150px]">
+            <QuickSizeSelect />
+          </div>
         </NavbarItem>
         
         <NavbarItem>

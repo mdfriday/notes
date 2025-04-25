@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import CopyButtonGroup from "./copy-button-group.tsx";
 import DownloadButtonGroup from "./download-button-group.tsx";
+import QuickSizeSelect from "./quick-size-select.tsx";
 
 import StyleSettingPopover from "@/components/toolbar/style-setting-popover.tsx";
 import { ToolbarState } from "@/core/state/toolbarState";
@@ -31,7 +32,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ markdown }) => {
   return (
     <div className="grid grid-cols-12 gap-4 items-center mb-4">
       <Select
-        className="lg:col-span-3 col-span-8"
+        className="lg:col-span-2 col-span-6"
         disallowEmptySelection={true}
         label={t("toolbar.selectStyleText")}
         selectedKeys={[selectedStyle]}
@@ -43,21 +44,24 @@ const Toolbar: React.FC<ToolbarProps> = ({ markdown }) => {
           </SelectItem>
         ))}
       </Select>
-        <Select
-            className="lg:col-span-3 col-span-8"
-            disallowEmptySelection={true}
-            label={t("toolbar.selectTemplateText")}
-            selectedKeys={[selectedTemplate]}
-            onChange={(e) => setSelectedTemplate(e.target.value)}
-        >
-            {templateExamples.map((style) => (
-                <SelectItem key={style.name} value={style.name}>
-                    {t(`templateName.${style.name}`)}
-                </SelectItem>
-            ))}
-        </Select>
+      <Select
+        className="lg:col-span-2 col-span-6"
+        disallowEmptySelection={true}
+        label={t("toolbar.selectTemplateText")}
+        selectedKeys={[selectedTemplate]}
+        onChange={(e) => setSelectedTemplate(e.target.value)}
+      >
+        {templateExamples.map((style) => (
+          <SelectItem key={style.name} value={style.name}>
+            {t(`templateName.${style.name}`)}
+          </SelectItem>
+        ))}
+      </Select>
       <div className="lg:col-span-2 col-span-4">
         <StyleSettingPopover />
+      </div>
+      <div className="lg:col-span-2 col-span-4">
+        <QuickSizeSelect />
       </div>
       <div className="lg:col-span-2 col-span-6">
         <CopyButtonGroup />
