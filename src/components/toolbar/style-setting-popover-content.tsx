@@ -4,8 +4,9 @@ import { ChromePicker } from "react-color";
 import { Slider } from "@nextui-org/slider";
 import { useTranslation } from "react-i18next";
 import { Input } from "@nextui-org/input";
+import { Button } from "@nextui-org/button";
 
-import { ToolbarState } from "@/core/state/toolbarState.ts";
+import { ToolbarState, rightPaneSizes } from "@/core/state/toolbarState.ts";
 import {
   cssToRecord,
   extractContainerLayoutContent,
@@ -47,7 +48,7 @@ const ColorBox = ({
 export const StyleSettingPopoverContent = () => {
   const { t } = useTranslation();
 
-  const { articleStyle, setArticleStyle } = ToolbarState.useContainer();
+  const { articleStyle, setArticleStyle, setRightPaneWidth } = ToolbarState.useContainer();
 
   const [newStyle, setNewStyle] = useState<Record<string, string>>(
     cssToRecord(extractContainerLayoutContent(articleStyle)),
@@ -63,6 +64,18 @@ export const StyleSettingPopoverContent = () => {
       });
     }
   }, [newStyle]);
+
+  // Handler for preview width selection
+  const handleWidthSelect = (width: number) => {
+    // Set the width through the ToolbarState
+    setRightPaneWidth(width);
+    
+    // Force regeneration of right pane width to ensure it's applied
+    setTimeout(() => {
+      // This will help ensure resize calculations happen when the DOM has updated
+      window.dispatchEvent(new Event('resize'));
+    }, 10);
+  };
 
   return (
     <PopoverContent className="w-[360px]">
@@ -107,6 +120,30 @@ export const StyleSettingPopoverContent = () => {
                 });
               }}
             />
+          </div>
+          
+          {/* Preview Width Options */}
+          <div className="mt-4">
+            <p className="text-small font-medium mb-2">{t("toolbar.quickSizeText")}</p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="flat"
+                onClick={() => handleWidthSelect(0)}
+              >
+                {t("toolbar.defaultSize")}
+              </Button>
+              {rightPaneSizes.filter(size => size.name !== "default").map((size) => (
+                <Button
+                  key={size.name}
+                  size="sm"
+                  variant="flat"
+                  onClick={() => handleWidthSelect(size.value + 40)}
+                >
+                  {`${size.value}px`}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       )}

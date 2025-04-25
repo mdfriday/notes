@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 
 import CopyButtonGroup from "./copy-button-group.tsx";
 import DownloadButtonGroup from "./download-button-group.tsx";
-import QuickSizeSelect from "./quick-size-select.tsx";
 
 import StyleSettingPopover from "@/components/toolbar/style-setting-popover.tsx";
 import { ToolbarState } from "@/core/state/toolbarState";
@@ -60,13 +59,10 @@ const Toolbar: React.FC<ToolbarProps> = ({ markdown }) => {
       <div className="lg:col-span-2 col-span-4">
         <StyleSettingPopover />
       </div>
-      <div className="lg:col-span-2 col-span-4">
-        <QuickSizeSelect />
-      </div>
-      <div className="lg:col-span-2 col-span-6">
+      <div className="lg:col-span-3 col-span-6">
         <CopyButtonGroup />
       </div>
-      <div className="lg:col-span-2 col-span-6">
+      <div className="lg:col-span-3 col-span-6">
         <DownloadButtonGroup markdown={markdown} />
       </div>
     </div>
