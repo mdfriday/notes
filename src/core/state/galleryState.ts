@@ -32,7 +32,7 @@ export function useGalleryState() {
       setAllTags(tagsData);
 
       // Fetch initial images
-      const { images: imagesData, hasMore: hasMoreData } = await fetchImages(1, 12, searchTerm, selectedTags);
+      const { images: imagesData, hasMore: hasMoreData } = await fetchImages(1, 10, searchTerm, selectedTags);
       
       // Update state
       setImages(imagesData);
@@ -57,7 +57,7 @@ export function useGalleryState() {
         const nextPage = page + 1;
         
         // Fetch next batch of images
-        const { images: newImages, hasMore: hasMoreData } = await fetchImages(nextPage, 8, searchTerm, selectedTags);
+        const { images: newImages, hasMore: hasMoreData } = await fetchImages(nextPage, 10, searchTerm, selectedTags);
         
         // Update state with new images
         setImages(prevImages => [...prevImages, ...newImages]);

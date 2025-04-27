@@ -47,10 +47,6 @@ export function buildUrl(url: string, params?: Record<string, string | number | 
     // Find and replace the URLSearchParams-encoded version with our custom encoded version
     const qParamRegex = new RegExp(`q=[^&]*`);
     queryString = queryString.replace(qParamRegex, qParamRaw);
-    console.log('Encoded search query param:', qParamRaw);
-    // Log the full URL for debugging
-    console.log('Final URL with properly encoded search query:', 
-      `${url}?${queryString}`);
   }
   
   return queryString ? `${url}?${queryString}` : url;
@@ -80,7 +76,6 @@ export async function fetchWithErrorHandling<T>(
   }
   
   try {
-    console.log(`Fetching URL: ${fullUrl}`);
     const response = await fetch(fullUrl, {
       ...fetchOptions,
       headers,
@@ -90,14 +85,12 @@ export async function fetchWithErrorHandling<T>(
     const etag = response.headers.get('Etag');
     if (etag) {
       etagCache.set(fullUrl, etag);
-      console.log(`Cached ETag: ${etag} for URL: ${fullUrl}`);
     }
     
     // Handle 304 Not Modified - return cached data if available
     if (response.status === 304) {
       const cachedData = localStorage.getItem(`api_cache_${fullUrl}`);
       if (cachedData) {
-        console.log(`Using cached data for URL: ${fullUrl}`);
         return JSON.parse(cachedData) as T;
       }
       // If somehow we got a 304 but no cached data, proceed with normal response handling
@@ -126,8 +119,7 @@ export async function fetchWithErrorHandling<T>(
     
     try {
       const data = JSON.parse(responseText);
-      console.log('API response raw data:', { url: fullUrl, data });
-      
+
       // Cache successful responses
       if (!disableCache && response.ok) {
         localStorage.setItem(`api_cache_${fullUrl}`, JSON.stringify(data));

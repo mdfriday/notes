@@ -1,19 +1,10 @@
 /**
  * Service for communicating with the backend API to fetch images, tags, and handle search operations
  */
-import { 
-  API_ENDPOINTS, 
-  DEFAULT_REQUEST_PARAMS 
-} from '../../config/api.ts';
-import { 
-  ApiResponse, 
-  ApiImageItem, 
-  ImageListParams, 
-  ImageSearchParams, 
-  ImageTagsParams 
-} from '../../types/api.ts';
-import { ImageItem } from '../../types/gallery.ts';
-import { api } from '@/core/utils/apiUtils.ts';
+import {API_ENDPOINTS, DEFAULT_REQUEST_PARAMS} from '../../config/api.ts';
+import {ApiImageItem} from '../../types/api.ts';
+import {ImageItem} from '../../types/gallery.ts';
+import {api} from '@/core/utils/apiUtils.ts';
 
 /**
  * Maps API Image item to the app's ImageItem format
@@ -103,7 +94,7 @@ export const imageApiService = {
     searchTerm = '',
     selectedTags: string[] = []
   ): Promise<{ images: ImageItem[]; hasMore: boolean }> {
-    const offset = (page - 1) * limit;
+    const offset = page - 1;
     
     try {
       // Determine if we should use search or regular images endpoint
@@ -168,9 +159,6 @@ export const imageApiService = {
         );
       }
       
-      // Log the raw response for debugging
-      console.log('API response structure:', JSON.stringify(response, null, 2));
-      
       // Validate that we received a valid response
       if (!response) {
         console.error('Empty API response');
@@ -226,9 +214,7 @@ export const imageApiService = {
         API_ENDPOINTS.IMAGE_TAGS,
         { params }
       );
-      
-      console.log('Tags API response:', JSON.stringify(response, null, 2));
-      
+
       // Validate that we received a valid response
       if (!response || !response.data) {
         console.error('Invalid API response for tags:', response);
@@ -240,11 +226,8 @@ export const imageApiService = {
         console.error('Tags data is not an array:', response.data);
         return [];
       }
-      
-      const tags = flattenTagsArray(response.data);
-      console.log('Processed tags:', tags);
-      
-      return tags;
+
+      return flattenTagsArray(response.data);
     } catch (error) {
       console.error('Error fetching tags:', error);
       return [];

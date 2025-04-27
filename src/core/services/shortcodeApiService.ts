@@ -1,30 +1,11 @@
 /**
  * Service for communicating with the backend API to fetch shortcodes, tags, and handle search operations
  */
-import { 
-  API_ENDPOINTS, 
-  SHORTCODE_REQUEST_PARAMS,
-  API_BASE_URL 
-} from '../../config/api.ts';
-import {
-  ApiResponse,
-  ApiShortcodeItem,
-  ShortcodeListParams,
-  ShortcodeSearchParams,
-  ShortcodeTagsParams,
-  ShortcodeDetailsParams
-} from '../../types/api.ts';
-import { 
-  ShortcodeItem, 
-  ShortcodeSearchResult,
-  ShortcodeMetadata
-} from '../../types/shortcode.ts';
-import { api } from '@/core/utils/apiUtils.ts';
-import { 
-  getThumbnailUrl, 
-  getFullAssetUrl, 
-  buildShortcodeTagsQuery 
-} from '@/core/utils/shortcodeUtils.ts';
+import {API_BASE_URL, API_ENDPOINTS, SHORTCODE_REQUEST_PARAMS} from '../../config/api.ts';
+import {ApiResponse, ApiShortcodeItem} from '../../types/api.ts';
+import {ShortcodeItem, ShortcodeMetadata, ShortcodeSearchResult} from '../../types/shortcode.ts';
+import {api} from '@/core/utils/apiUtils.ts';
+import {getFullAssetUrl, getThumbnailUrl} from '@/core/utils/shortcodeUtils.ts';
 
 /**
  * Maps API Shortcode item to the app's ShortcodeItem format
@@ -131,7 +112,7 @@ export const shortcodeApiService = {
     searchTerm = '',
     selectedTags: string[] = []
   ): Promise<ShortcodeSearchResult> {
-    const offset = (page - 1) * limit;
+    const offset = page - 1;
     
     try {
       console.log('Searching shortcodes with:', { page, limit, searchTerm, selectedTags });
@@ -181,9 +162,6 @@ export const shortcodeApiService = {
         );
       }
       
-      // Log the raw response for debugging
-      console.log('API response structure:', JSON.stringify(response, null, 2));
-      
       // Validate that we received a valid response
       if (!response || !response.data) {
         console.error('Invalid API response:', response);
@@ -227,9 +205,7 @@ export const shortcodeApiService = {
         API_ENDPOINTS.SHORTCODE_TAGS,
         { params }
       );
-      
-      console.log('Tags API response:', JSON.stringify(response, null, 2));
-      
+
       // Validate that we received a valid response
       if (!response || !response.data) {
         console.error('Invalid API response for tags:', response);
@@ -241,11 +217,8 @@ export const shortcodeApiService = {
         console.error('Tags data is not an array:', response.data);
         return [];
       }
-      
-      const tags = flattenTagsArray(response.data);
-      console.log('Processed tags:', tags);
-      
-      return tags;
+
+      return flattenTagsArray(response.data);
     } catch (error) {
       console.error('Error fetching tags:', error);
       return [];
