@@ -15,7 +15,7 @@ const isProduction = import.meta.env.PROD;
 // Base API URL configuration
 const API_URLS = {
   development: 'http://127.0.0.1:1314',
-  production: '/api', // This will be proxied to the actual backend URL in production
+  production: 'https://mdfriday.sunwei.xyz', // This will be proxied to the actual backend URL in production
   custom: import.meta.env.VITE_API_BASE_URL, // Custom override from env
 };
 
