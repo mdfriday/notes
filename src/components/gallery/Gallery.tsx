@@ -13,7 +13,7 @@ import SearchInput from '../SearchInput';
 const globalImageCache = new Map<string, HTMLImageElement>();
 
 // Helper to calculate if element is in viewport
-const isInViewport = (element: HTMLElement, rootMargin = 300): boolean => {
+const isInViewport = (element: HTMLElement, rootMargin = 500): boolean => {
   if (!element) return false;
   const rect = element.getBoundingClientRect();
   return (
@@ -36,7 +36,7 @@ const Gallery = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   // Track visible start/end indices to only render visible images
   const [visibleStartIndex, setVisibleStartIndex] = useState(0);
-  const [visibleEndIndex, setVisibleEndIndex] = useState(20); // Initial render amount
+  const [visibleEndIndex, setVisibleEndIndex] = useState(40); // 增加初始渲染数量，确保首屏加载更多图片
   
   const observer = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
@@ -44,6 +44,7 @@ const Gallery = () => {
   const imageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const scrollTimeout = useRef<number | null>(null);
   const lastScrollPosition = useRef(0);
+  const renderedIndices = useRef<Set<number>>(new Set()); // 跟踪已经渲染过的图片索引
   
   // Optimized image prefetching with proper caching
   const prefetchImage = useCallback((image: ImageItem) => {
@@ -70,17 +71,17 @@ const Gallery = () => {
     
     if (priority) {
       // Load important images immediately
-      processBatch(imageItems.slice(0, 8)); 
+      processBatch(imageItems.slice(0, 12)); // 增加优先加载的图片数量
       
       // Load the rest during idle time
-      if (imageItems.length > 8) {
+      if (imageItems.length > 12) {
         if ('requestIdleCallback' in window) {
           (window as any).requestIdleCallback(() => {
-            processBatch(imageItems.slice(8));
+            processBatch(imageItems.slice(12));
           });
         } else {
           // Fallback for browsers without requestIdleCallback
-          setTimeout(() => processBatch(imageItems.slice(8)), 200);
+          setTimeout(() => processBatch(imageItems.slice(12)), 200);
         }
       }
     } else {
@@ -102,6 +103,7 @@ const Gallery = () => {
         setInitialLoading(true);
         setLoading(true);
         setPage(1);
+        renderedIndices.current.clear(); // 重置已渲染索引的跟踪
 
         // Fetch tags - Fix the issue by awaiting the Promise
         const tagsData = await getAllTags();
@@ -129,7 +131,41 @@ const Gallery = () => {
     loadInitialData();
   }, [searchTerm, selectedTags, prefetchImages]);
 
-  // Load more images when scrolling
+  // 扩展可见范围以包含新加载的图片
+  const extendVisibleRange = useCallback((newImages: ImageItem[], autoScroll = false) => {
+    // 如果是小数据集（<50张图片），直接渲染全部
+    if (images.length + newImages.length < 50) {
+      setVisibleStartIndex(0);
+      setVisibleEndIndex(images.length + newImages.length - 1);
+      return;
+    }
+    
+    // 否则确保至少包含所有新图片在可见范围内
+    const currentEnd = visibleEndIndex;
+    const newEnd = Math.max(
+      currentEnd,
+      images.length + Math.min(newImages.length, 20) - 1
+    );
+    
+    setVisibleEndIndex(newEnd);
+    
+    // 将新加载的图片索引添加到已渲染集合中
+    for (let i = images.length; i < images.length + newImages.length; i++) {
+      renderedIndices.current.add(i);
+    }
+    
+    // 如果需要自动滚动（例如搜索结果变化）
+    if (autoScroll && newImages.length > 0) {
+      setTimeout(() => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }, 100);
+    }
+  }, [images.length, visibleEndIndex]);
+
+  // Load more images when scrolling - 改进加载更多图片的逻辑
   const loadMoreImages = useCallback(async () => {
     if (!loading && hasMore) {
       try {
@@ -142,23 +178,36 @@ const Gallery = () => {
         // Fetch next batch of images
         const { images: newImages, hasMore: hasMoreData } = await fetchImages(nextPage, 10, searchTerm, selectedTags);
         
-        // Update state with new images
-        setImages(prevImages => {
-          const updatedImages = [...prevImages, ...newImages];
-          // Prefetch new images with lower priority
-          prefetchImages(newImages, false);
-          return updatedImages;
-        });
+        if (newImages.length > 0) {
+          // Update state with new images
+          setImages(prevImages => {
+            const updatedImages = [...prevImages, ...newImages];
+            // Prefetch new images with lower priority
+            prefetchImages(newImages, false);
+            return updatedImages;
+          });
+          
+          // 扩展可见范围以包含新加载的图片
+          extendVisibleRange(newImages);
+          
+          setPage(nextPage);
+        }
         
-        setPage(nextPage);
-        setHasMore(hasMoreData);
+        setHasMore(hasMoreData && newImages.length > 0);
       } catch (err) {
         console.error('Error loading more images:', err);
       } finally {
         setLoading(false);
+        
+        // 恢复滚动位置 - 避免加载后页面跳动
+        setTimeout(() => {
+          if (lastScrollPosition.current > 0) {
+            window.scrollTo(0, lastScrollPosition.current);
+          }
+        }, 50);
       }
     }
-  }, [loading, hasMore, page, searchTerm, selectedTags, prefetchImages]);
+  }, [loading, hasMore, page, searchTerm, selectedTags, prefetchImages, extendVisibleRange]);
 
   // Update visible image indices based on scroll position - debounced
   const updateVisibleImages = useCallback(() => {
@@ -169,7 +218,15 @@ const Gallery = () => {
     
     // Throttle updates to reduce CPU load
     scrollTimeout.current = window.setTimeout(() => {
-      if (!galleryRef.current) return;
+      if (!galleryRef.current || images.length === 0) return;
+      
+      // 如果是小数据集，直接渲染全部
+      if (images.length < 50) {
+        setVisibleStartIndex(0);
+        setVisibleEndIndex(images.length - 1);
+        scrollTimeout.current = null;
+        return;
+      }
       
       // Calculate visible range with buffer for smoother scrolling
       const newVisibleIndices = {
@@ -186,15 +243,29 @@ const Gallery = () => {
         }
       });
       
-      // Add buffer zones for smoother scrolling
-      newVisibleIndices.start = Math.max(0, newVisibleIndices.start - 8);
-      newVisibleIndices.end = Math.min(images.length - 1, newVisibleIndices.end + 8);
+      // 增加缓冲区大小，确保滚动时有足够的预渲染区域
+      newVisibleIndices.start = Math.max(0, newVisibleIndices.start - 15);
+      newVisibleIndices.end = Math.min(images.length - 1, newVisibleIndices.end + 15);
+      
+      // 确保已渲染过的图片保持在可见范围内，防止重复渲染和闪烁
+      renderedIndices.current.forEach(index => {
+        if (index >= newVisibleIndices.start - 5 && index <= newVisibleIndices.end + 5) {
+          // 如果已渲染过的图片接近可视区域，保留在渲染范围内
+          newVisibleIndices.start = Math.min(newVisibleIndices.start, index);
+          newVisibleIndices.end = Math.max(newVisibleIndices.end, index);
+        }
+      });
       
       // Update if changed
       if (newVisibleIndices.start !== visibleStartIndex || 
           newVisibleIndices.end !== visibleEndIndex) {
         setVisibleStartIndex(newVisibleIndices.start);
         setVisibleEndIndex(newVisibleIndices.end);
+        
+        // 更新已渲染索引集合
+        for (let i = newVisibleIndices.start; i <= newVisibleIndices.end; i++) {
+          renderedIndices.current.add(i);
+        }
       }
       
       scrollTimeout.current = null;
@@ -217,6 +288,9 @@ const Gallery = () => {
     };
     
     window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // 初始运行一次，确保初始状态正确
+    updateVisibleImages();
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -242,7 +316,7 @@ const Gallery = () => {
       }
     }, { 
       threshold: 0.1, 
-      rootMargin: '300px' // Increase rootMargin to load earlier
+      rootMargin: '500px' // 增加rootMargin以提前加载
     }); 
     
     observer.current.observe(currentLoadingRef);
@@ -254,13 +328,33 @@ const Gallery = () => {
     };
   }, [hasMore, loading, loadMoreImages]);
 
-  // Calculate which images to actually render
+  // Calculate which images to actually render with smart optimization
   const visibleImages = useMemo(() => {
     if (images.length === 0) return [];
     
-    // Only render the visible slice of images
-    return images.slice(visibleStartIndex, visibleEndIndex + 1);
+    // 小数据集时直接渲染所有图片
+    if (images.length < 50) {
+      return images;
+    }
+    
+    // 对于大数据集，渲染可见部分
+    const imagesToRender = images.slice(visibleStartIndex, visibleEndIndex + 1);
+    
+    // 如果渲染的图片数量太少，确保至少渲染一定数量的图片
+    if (imagesToRender.length < 20 && images.length > 20) {
+      return images.slice(0, Math.min(40, images.length));
+    }
+    
+    return imagesToRender;
   }, [images, visibleStartIndex, visibleEndIndex]);
+
+  // 监听images变化，确保新加载的图片被正确处理
+  useEffect(() => {
+    // 只在非初始加载阶段执行
+    if (!initialLoading && !loading && images.length > 0) {
+      updateVisibleImages();
+    }
+  }, [images.length, initialLoading, loading, updateVisibleImages]);
 
   // Handle search term changes
   const handleSearch = useCallback((term: string) => {
@@ -356,6 +450,16 @@ const Gallery = () => {
         )}
       </div>
       
+      {/* 添加调试信息 */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-4 right-4 bg-black/70 text-white text-xs p-2 rounded z-50">
+          总图片: {images.length} | 
+          可见: {visibleStartIndex}-{visibleEndIndex} | 
+          渲染: {visibleImages.length} | 
+          页: {page}
+        </div>
+      )}
+      
       {/* Main Gallery */}
       <div className="w-full flex-grow">
         {loading && images.length === 0 ? (
@@ -383,11 +487,13 @@ const Gallery = () => {
           // Gallery grid with optimized rendering
           <MasonryGrid>
             {images.map((image, index) => (
-              // Only render images within the visible range
-              (index >= visibleStartIndex && index <= visibleEndIndex) && (
+              // 优化渲染条件：显示可见范围内的图片，确保之前显示过的图片不会消失
+              ((index >= visibleStartIndex && index <= visibleEndIndex) || 
+                renderedIndices.current.has(index)) && (
                 <div 
                   key={image.id}
                   ref={(element) => element && setImageRef(image.id, element)}
+                  data-index={index} // 添加索引属性便于调试
                 >
                   <ImageCard 
                     image={image}
@@ -395,7 +501,7 @@ const Gallery = () => {
                       setSelectedImage(img);
                       setModalOpen(true);
                     }}
-                    prefetched={index < 12} // Pre-fetch first batch
+                    prefetched={index < 20} // 增加预取图片的数量
                   />
                 </div>
               )
